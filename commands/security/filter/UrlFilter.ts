@@ -1,11 +1,11 @@
 import axios from "axios"
 import { GoogleAPI } from "../../../type/type.error"
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const {API_KEY} = require("../../../config.json")
 export default class MessageURLFilter {
-	API_KEY="AIzaSyDSdMvMncbG4HoxOHtLr5ykxnollC3iCqA"
-
+	
 	async checkURL(url:string) {
-		const result = await axios.post("https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+this.API_KEY,
+		const result = await axios.post("https://safebrowsing.googleapis.com/v4/threatMatches:find?key="+API_KEY,
 		{
 			"client": {
 				"clientId":      "laybot",
