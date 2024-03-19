@@ -1,0 +1,22 @@
+@startuml
+
+participant process
+
+participant management
+
+management -> process : process.exit request
+
+process -> process : check queue
+
+process -> management : send processing queue list
+
+new_process <- management : send processing queue list
+
+management -> process : check processing queue request per ten seconds
+activate process
+
+
+process -> management : send processing queue
+
+process -> management : finish queue and exit
+deactivate process
