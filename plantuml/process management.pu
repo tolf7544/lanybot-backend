@@ -17,6 +17,10 @@ activate process
 
 
 process -> management : send processing queue
+activate management
+
+management -> new_process : send processing queue
 
 process -> management : finish queue and exit
 deactivate process
+deactivate management
