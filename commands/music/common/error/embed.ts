@@ -3,7 +3,7 @@ import { CommunityServer } from "../../../../type/type.common";
 import { send_message } from "../../../../lib/sendMessage";
 import { client } from "../../../..";
 import { ErrorCode } from '../../../../type/type.error';
-import { icon } from "../icon";
+import { icon } from "../../../../lib/icon";
 
 export function sendEmbed(server:CommunityServer | undefined,code:string,isEphemeral?:boolean):undefined {
 	

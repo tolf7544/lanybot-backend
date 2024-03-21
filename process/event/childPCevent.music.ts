@@ -61,7 +61,6 @@ if(cluster.isWorker) {
 					processId: process.pid
 			}))
 			}
-
 	}
 	}))
 }

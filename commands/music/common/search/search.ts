@@ -4,7 +4,7 @@ import { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder,
 import { client } from "../../../..";
 import { error } from 'winston';
 import { Lang } from '../../../../lib/word';
-import { icon } from '../icon';
+import { icon } from '../../../../lib/icon';
 import { Search, recomendMusicData } from '../yt_video/searchingQuery';
 import { CommunityServer } from '../../../../type/type.common';
 import { interaction_reply } from '../../../../lib/sendMessage';

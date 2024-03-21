@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js"
 import { CommunityServer } from "../../../../type/type.common"
-import { icon } from "../icon"
+import { icon } from "../../../../lib/icon"
 import { PlaylistItem } from "../../../../type/type.queue"
 import { Lang } from "../../../../lib/word"
 

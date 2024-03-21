@@ -1,31 +1,49 @@
 import cluster, { Worker } from "cluster"
 import { client, debugging } from "../.."
-import { WorkerAction, CommandType, ProcessMessage } from "../../type/type.versionManager"
-import { SecurityVersionName, SlashCommandVersionName, Version, VersionName } from "../../type/type.index"
+import { WorkerAction, CommandType, ProcessMessage, MusicWorkerType } from "../../type/type.versionManager"
+import { MusicVersionName, SecurityVersionName, SlashCommandVersionName, Version, VersionName } from "../../type/type.index"
 import path from "path"
 import fs from 'fs';
 
 export function workerPCevent(worker:Worker) {
 if (cluster.isPrimary) {
 	worker.on("message", ((message: string) => {
-		console.log(message)
+
 		const _m: ProcessMessage<"worker"> = JSON.parse(message)
 		const pid = Array.from(client.process.entries()).filter((_v) => { return _v[1].worker.process.pid == _m.processId })
 		const keys = getVersionKey(_m.versionType);
+		console.log(_m)
 		if(pid.length != 0) {
-			if (_m.message == WorkerAction.shutdown) {
-				const _w = client.process.get(pid[0][0])?.worker
-				if(_w) {
-					_w.kill();
-				}
-				
-				if(keys?.length == 1) {
-					generateProcess(_m.versionType, JSON.stringify({}));
-
+			if(_m.message) {
+				if (_m.message == WorkerAction.shutdown) {
+					const _w = client.process.get(pid[0][0])?.worker
+					if(_w) {
+						_w.kill();
+					}
 					
-				}  
-				return client.process.delete(pid[0][0])
+					if(keys?.length == 1) {
+						generateProcess(_m.versionType, JSON.stringify([]));
+					} else {
+						if(keys) {
+							const key = keys[1];
+							client.process.get(key)?.worker.send(JSON.stringify({
+								type: "cluster",
+								message: WorkerAction.passPreviousVersionUserList,
+								collection:_m.collection as string,
+								processId: worker.process.pid,
+								versionType: _m.versionType
+							} as ProcessMessage<"cluster">))
+						}
+					}
+
+					return client.process.delete(pid[0][0])
+				} else if(_m.versionType == MusicWorkerType.stream) {
+					const pc = client.process.get(keys?.pop() as string);
+					
+					pc?.worker.send(message)
+				}
 			}
+
 		}
 
 
@@ -109,11 +127,13 @@ export function generateProcess(name: VersionName, guilds_list?: string, callbac
 	if(!name) return;
 	const foldersPath = path.join(__dirname, 'commands/');
 	const _v = version()
-	let commandType: CommandType
+	let commandType: CommandType | keyof typeof MusicVersionName
 	if (name in SecurityVersionName) {
 		commandType = CommandType.security
+	} else if(name in MusicVersionName){
+		commandType = name as MusicVersionName
 	} else {
-		commandType = CommandType.music
+		commandType = CommandType.client
 	}
 	// eslint-disable-next-line no-prototype-builtins
 

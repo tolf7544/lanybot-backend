@@ -86,7 +86,6 @@ export class Queue extends Map<number, Metadata> {
 	}
 
 	next() {
-		
 		if(this.loop == "single") {
 			/** pass */
 		} else if(this.loop == "all") {
@@ -113,21 +112,19 @@ export class Queue extends Map<number, Metadata> {
 		return temp;
 	}
 
-	add(query: string, isNext: boolean): Promise<Metadata | void> {
-		return new Promise((resolve,reject) => {
-			if(!this.communityServer) return reject(); 
-
+	add(query: string, isNext: boolean): string | boolean | undefined {
+			if(!this.communityServer) return false; 
 			this.search_query(query).then((id_list) => {
-				if (typeof id_list == 'undefined') return reject();
+				if (typeof id_list == 'undefined') return false;
 				if (typeof id_list == "string") {
-					return reject(id_list);
+					return id_list;
 				} else {
 					if (id_list.length > 0) {
 						let id: videoId = ""
 						if (typeof id_list[0][0] == "string") {
 							id = id_list[0][0];
 						} else {
-							return reject();
+							return true
 						}
 						const music = new Metadata(id)
 						music.setMusic(this.communityServer as CommunityServer).then(() => {
@@ -141,7 +138,7 @@ export class Queue extends Map<number, Metadata> {
 								this.set(this.mapId,music)
 							}
 						})
-						return resolve(music)
+						return true
 					}
 					
 					if (id_list.length > 1) {
@@ -162,10 +159,10 @@ export class Queue extends Map<number, Metadata> {
 						}
 					}
 
-					return resolve()
+					return true
 				}	
 			});
-		})
+
 		}
 	
 	async search_query(input_query: string) {

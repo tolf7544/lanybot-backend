@@ -1,0 +1,13 @@
+@startuml
+
+start
+:sentence;
+:FastText word embbeding model;
+if (sentences.length > 2) then (yes)
+	:check cosine simularity each sentence;
+	:check spam;
+	:remove sentence;
+else (no)
+:save sentence unitl in time 5 second;
+endif
+stop

@@ -11,11 +11,17 @@ import { DiscordClient, Streaming } from "../../../type/type.error";
 import { Lang } from "../../../lib/word";
 import { CommunityServer } from "../../../type/type.common";
 import { action, command, status } from "../../../type/type.log";
+import { Metadata } from "./queue/metadata";
+import { sendStreamPCMessage } from "./useStreamPC";
+import { MusicWorkerType } from "../../../type/type.versionManager";
 
 export function useMusic(guildId:string,i:ChatInputCommandInteraction) {
 	if(client.music.has(guildId)) {
+
+
 		return client.music.get(guildId)
 	} else {
+
 		const server = useGuild(i)
 		if(!server) return; 
 		client.music.set(server.guild.id,new Music(i))
@@ -48,28 +54,61 @@ export class Music extends ClientResource {
 		}
 	}
 
-	
-	async play(input_query: string, isNext: boolean) {
-		
-		this.checkUserPlayState().then(async () => {
 
-			this.queue.add(input_query, isNext).then(() => {
-				if (!this.connection || !this.player) {
-					//await this.play()
-					
-					console.log(this.queue.keys())
+	play(input_query: string, isNext: boolean) {
+
+		this.checkUserPlayState().then(() => {
+			let metadata:Metadata | undefined;
+			const result = this.queue.add(input_query, isNext)
+
+			if (typeof result == "string") {this.sendEmbed(this.communityServer, result)}
+			if (result != true) return;
+
+			if (!this.connection || !this.player) {
+				let autoSkippedCount = 0;
+				for (let i = 0; i < this.queue.size; i++) {
+					metadata = this.queue.active()
+					if (!metadata) {
+						this.queue.remove();
+						autoSkippedCount += 1;
 					} else {
-						// if (isNextAdd == true) this.addEmbed(this.queue[this.activeStreamIndex + 1], this.queue.length) // 현재 재생하는 노래의 다음 어레이 위치에 있는 music 클래스 입력
-						// if (isNextAdd == false) this.addEmbed(this.queue[this.queue.length - 1], this.queue.length) // 현재 어레이 마지막에 위치한 music 클래스 입력
+						break;
 					}
-			}).catch((res) => {
-				if(typeof res == "string") {this.sendEmbed(this.communityServer,res)}
-			})
+				}
 
+				if (autoSkippedCount > 0) {
+					/**
+					 * title: 음악을 재생하는데 문제가 생겼어요...
+					 * description:  총 ${autoSkippedCount}개의 음악이 스킵되었습니다!
+					 */
+				}
 
+				this.checkQueueSize(async () => {
+					metadata = metadata as Metadata
+					console.log(metadata)
+					if (metadata.MusicData) {
+						// send message 
+						metadata.setMusic(this.communityServer as CommunityServer).then(() => {
+							/**
+							 * 
+							 * play embed
+							 * 
+							 */
+						})
+					}
 
+					sendStreamPCMessage(MusicWorkerType.stream, "executeStream", metadata.id)
+					/**
+					 * 
+					 * streaming source code
+					 * 
+					 */
+				})
+			} else {
+				// if (isNextAdd == true) this.addEmbed(this.queue[this.activeStreamIndex + 1], this.queue.length) // 현재 재생하는 노래의 다음 어레이 위치에 있는 music 클래스 입력
+				// if (isNextAdd == false) this.addEmbed(this.queue[this.queue.length - 1], this.queue.length) // 현재 어레이 마지막에 위치한 music 클래스 입력
+			}
 		})
-		
 	}
 
 	skip(skipNumber:number | null):void {
@@ -95,6 +134,17 @@ export class Music extends ClientResource {
 		}
 	}
 
+	private checkQueueSize(run: CallableFunction) {
+		if(this.queue.size == 0) {
+			/** send message
+			 * 
+			 * 음악이 모두 재생되었습니다.
+			 * 
+			 *  */
+		} else {
+			run();
+		}
+	}
 
 	private checkUserViewQueueState(): Promise<void> {
 		return new Promise((resolve,reject) => {

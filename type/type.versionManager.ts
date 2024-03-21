@@ -8,7 +8,6 @@ export enum WorkerAction {
 }
 
 export enum MusicWorkerAction {
-	getClientData = "getClientData",
 	executeStream = "executeStream",
 	skipStream = "skipStream",
 	pauseStream = "pauseStream",
@@ -19,14 +18,15 @@ export enum MusicWorkerAction {
 }
 
 export enum StreamWorkerAction {
-	getClientData = "getClientData",
 	commandFailed = "commandFailed",
 	commandSuccess = "commandSuccess"
 }
 
 export enum CommandType {
 	music = "music",
-	security = "security"
+	security = "security",
+	stream = "stream",
+	client = "client"
 }
 
 export type PublishFiles = {
@@ -41,7 +41,7 @@ export type ProcessMessage<T extends keyof typeof ProcessActionType> = {
 	message?: WorkerAction | MusicWorkerAction | StreamWorkerAction,
 	collection?: string,
 	isSlash?: boolean,
-	data?: unknown,
+	data?: string,
 	processId: number,
 }
 
@@ -54,7 +54,6 @@ cluster ="cluster",
 export enum MusicWorkerType {
 music = "music",
 stream = "stream" ,
-clientData ="clientData",
 }
 
 type ProcessType = MusicStreamType | RoleMessageType | ClusterMessageType | WrokerMessageType
@@ -78,3 +77,11 @@ export type WrokerMessageType = {
 	type: ProcessActionType.worker,
 	versionType: VersionName
 } 
+
+export interface ClientIPCDataForamt {
+	id: {
+		user: string,
+		guild: string,
+	}
+
+}

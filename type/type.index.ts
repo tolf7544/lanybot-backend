@@ -14,10 +14,10 @@ export enum SecurityVersionName {
 	imageFilter = "imageFilter",
 }
 
+
 export enum MusicVersionName {
 	music = "music",
 	stream = "stream",
-	clientData = "clientData"
 }
 export const SlashCommandVersionName = {
 	...MusicVersionName,
@@ -26,7 +26,6 @@ export const SlashCommandVersionName = {
 }
 
 export enum ClientVersionName {
-	interaction_reactor = "interaction_reactor"
 }
 
 export type VersionName = keyof typeof MusicVersionName | keyof typeof SecurityVersionName | keyof typeof ClientVersionName

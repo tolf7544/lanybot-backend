@@ -14,14 +14,17 @@ import { Music } from './commands/music/common/music';
 import "./process/event/masterPCevent.index";
 import "./process/event/childPCevent.index";
 import "./process/event/childPCevent.message";
-import "./process/event/childPCevent.musicStream";
+import "./process/event/childPCevent.music";
 import music from './process/musicStream.music';
 import spam from './process/security.spam';
+import { queueItem } from './commands/music/common/yt_video/streamPlaylistData';
+import musicStream from './process/musicStream.stream';
 declare module "discord.js" {
 	export interface Client {
 		commands: Collection<unknown, unknown>
 		cooldowns: Collection<unknown, unknown>
 		version: Collection<string, string>
+		streamQueue: Collection<string,queueItem[]>
 		spam: Collection<string, SpamDetector>
 		previous_version_guilds:Set<string>
 		music: Collection<string,Music>
@@ -53,6 +56,11 @@ if (cluster.isPrimary) {
 	client.process = new Collection();
 	client.cooldowns = new Collection();
 	client.COOLDOWN_SECONDS = 1;
+
+	/**
+	 * main management collection
+	 */
+	client.music = new Collection();
 
 
 	client.once(Events.ClientReady, () => {
@@ -95,6 +103,7 @@ if (cluster.isPrimary) {
 			if (ROLE.length == 0 || typeof ROLE[0] != "string") {
 				return process.exit();
 			} else {
+				console.log(ROLE[0])
 				switch (ROLE[0]) {
 					case "music":
 						music();
@@ -102,7 +111,10 @@ if (cluster.isPrimary) {
 					case "spam":
 						spam()
 						break;
-				}
+					case "stream":
+						musicStream();
+						break;
+					}
 			}
 		}, 1000 * 3);
 	})
