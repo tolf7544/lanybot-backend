@@ -1,5 +1,7 @@
 node_modules/*
 config.json
+build\commands\stream\cookie.json
+commands\stream\cookie.json
 register.js
 build/*
 yarn.lock

@@ -1,6 +1,6 @@
 import cluster, { Worker } from "cluster"
 import { client, debugging } from "../.."
-import { WorkerAction, CommandType, ProcessMessage, MusicWorkerType } from "../../type/type.versionManager"
+import { WorkerAction, CommandType, ProcessMessage } from "../../type/type.versionManager"
 import { MusicVersionName, SecurityVersionName, SlashCommandVersionName, Version, VersionName } from "../../type/type.index"
 import path from "path"
 import fs from 'fs';
@@ -9,10 +9,9 @@ export function workerPCevent(worker:Worker) {
 if (cluster.isPrimary) {
 	worker.on("message", ((message: string) => {
 
-		const _m: ProcessMessage<"worker"> = JSON.parse(message)
+		const _m: ProcessMessage<"worker" | "music"> = JSON.parse(message)
 		const pid = Array.from(client.process.entries()).filter((_v) => { return _v[1].worker.process.pid == _m.processId })
-		const keys = getVersionKey(_m.versionType);
-		console.log(_m)
+		const keys = getVersionKey(_m.process.versionType);
 		if(pid.length != 0) {
 			if(_m.message) {
 				if (_m.message == WorkerAction.shutdown) {
@@ -22,26 +21,29 @@ if (cluster.isPrimary) {
 					}
 					
 					if(keys?.length == 1) {
-						generateProcess(_m.versionType, JSON.stringify([]));
+						generateProcess(_m.process.versionType, JSON.stringify([]));
 					} else {
 						if(keys) {
 							const key = keys[1];
 							client.process.get(key)?.worker.send(JSON.stringify({
-								type: "cluster",
+								process: {
+									type: "cluster",	
+									versionType: _m.process.versionType
+								},
+
 								message: WorkerAction.passPreviousVersionUserList,
-								collection:_m.collection as string,
+								collection:JSON.stringify([]) as string,
 								processId: worker.process.pid,
-								versionType: _m.versionType
 							} as ProcessMessage<"cluster">))
 						}
 					}
 
 					return client.process.delete(pid[0][0])
-				} else if(_m.versionType == MusicWorkerType.stream) {
-					const pc = client.process.get(keys?.pop() as string);
-					
-					pc?.worker.send(message)
 				}
+			} else if(_m.process.type == "music") {
+				const pc = client.process.get(keys?.pop() as string);
+				console.log(_m)
+				pc?.worker.send(message)
 			}
 
 		}
@@ -49,8 +51,8 @@ if (cluster.isPrimary) {
 
 		if (_m.message == WorkerAction.sendCollection) {
 			if(keys?.length == 1) {
-				generateProcess(_m.versionType, _m.collection);
-			}  
+				generateProcess(_m.process.versionType, _m.collection);
+			}
 		}
 
 	}))
@@ -171,19 +173,23 @@ export function generateProcess(name: VersionName, guilds_list?: string, callbac
 		// eslint-disable-next-line no-prototype-builtins
 		const isSlash = SlashCommandVersionName.hasOwnProperty(name)
 		worker.send(JSON.stringify({
-			type: "role",
-			versionType: name,
+			process: {
+				type: "role",
+				versionType: name,
+			},
 			role: commandType,
 			isSlash: isSlash,
 			processId: worker.process.pid
 		} as ProcessMessage<"role">))
 
 		worker.send(JSON.stringify({
-			type: "cluster",
+			process: {
+				type: "cluster",
+				versionType: name
+			},
 			message: WorkerAction.passPreviousVersionUserList,
 			collection:guilds_list,
 			processId: worker.process.pid,
-			versionType: name
 		} as ProcessMessage<"cluster">))
 
 		if(callback) {

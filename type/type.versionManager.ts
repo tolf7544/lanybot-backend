@@ -1,4 +1,5 @@
 import { VersionName } from "./type.index"
+import { ActionStatus, FailedReason, MusicWorkerAction } from "./type.stream"
 
 
 export enum WorkerAction {
@@ -7,20 +8,7 @@ export enum WorkerAction {
 	passPreviousVersionUserList = "passPreviousVersionUserList" 
 }
 
-export enum MusicWorkerAction {
-	executeStream = "executeStream",
-	skipStream = "skipStream",
-	pauseStream = "pauseStream",
-	resumeStream = "resumeStream",
-	moveNextStream = "moveNextStream",
-	movePreStream = "movePreStream",
-	clearStream = "clearStream",
-}
 
-export enum StreamWorkerAction {
-	commandFailed = "commandFailed",
-	commandSuccess = "commandSuccess"
-}
 
 export enum CommandType {
 	music = "music",
@@ -33,34 +21,40 @@ export type PublishFiles = {
 	url: string,
 	name : VersionName
 } 
-export type ProcessMessage<T extends keyof typeof ProcessActionType> = {
-	type: T,
-	versionType: Extract<ProcessType,{type:T}>["versionType"]
+export interface ProcessMessage<T extends keyof typeof ProcessActionType> {
+	process:Extract<ProcessType,{type:T}>
 	role?: VersionName,
 	path?:string,
-	message?: WorkerAction | MusicWorkerAction | StreamWorkerAction,
+	message?: WorkerAction,
 	collection?: string,
 	isSlash?: boolean,
 	data?: string,
 	processId: number,
+
 }
 
 export enum ProcessActionType {
 worker = "worker",
+music = "music" ,
 role = "role" ,
 cluster ="cluster",
 }
 
 export enum MusicWorkerType {
 music = "music",
-stream = "stream" ,
+stream = "stream",
 }
 
 type ProcessType = MusicStreamType | RoleMessageType | ClusterMessageType | WrokerMessageType
 
 export type MusicStreamType = {
-	type: ProcessActionType.worker,
-	versionType: VersionName | keyof typeof MusicWorkerType
+	type: ProcessActionType.music,
+	versionType: VersionName | keyof typeof MusicWorkerType,
+	music: {
+		action: MusicWorkerAction,
+		status: ActionStatus,
+		reason?: FailedReason
+	}
 }
 
 export type RoleMessageType = {
@@ -78,10 +72,3 @@ export type WrokerMessageType = {
 	versionType: VersionName
 } 
 
-export interface ClientIPCDataForamt {
-	id: {
-		user: string,
-		guild: string,
-	}
-
-}

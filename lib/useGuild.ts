@@ -2,9 +2,9 @@ import { CacheType, Message, Guild, GuildMember, TextBasedChannel, BaseGuildText
 import { client } from "..";
 import { serverLogger } from "../logManager";
 import { CommunityServer } from "../type/type.common";
-import { PreviewMessage } from "../type/type.index";
+import { PreviewInteraction, PreviewMessage } from "../type/type.index";
 
-export function useGuild(interaction: ChatInputCommandInteraction<CacheType> | Message<boolean> | PreviewMessage): CommunityServer|undefined  {
+export function useGuild(interaction: ChatInputCommandInteraction<CacheType> | Message<boolean> | PreviewMessage | PreviewInteraction): CommunityServer|undefined  {
 
 		
 	let guild: Guild | null | undefined;
@@ -13,7 +13,29 @@ export function useGuild(interaction: ChatInputCommandInteraction<CacheType> | M
 	let GuildId: string | null;
 	let playerId: string | null;
 
-	if(interaction.type == "message") {
+	if(interaction.type == "interaction") {
+		GuildId = interaction.guildId;
+		playerId = interaction.memberId;
+		if (GuildId) {
+			guild = client.guilds.cache.get(GuildId);
+			if (guild) {
+				member = guild.members.cache.get(playerId);
+				channel = guild.channels.cache.get(interaction.channelId) as TextBasedChannel | BaseGuildTextChannel  | BaseGuildVoiceChannel
+			if(member) {
+					return {guild:guild,member:member, channel:channel,type:'CS'};
+				} else {
+				serviceLogger(" member or channel data is undefined\ndisocrd_api_service occured error")
+				return;
+				}
+			} else {
+				serviceLogger(" guild data is undefined\ndisocrd_api_service occured error")
+				return;
+			}
+		} else {
+			serviceLogger(" GuildId is undefined\ndisocrd_api_service occured error")
+			return;
+		}
+	} else if(interaction.type == "message") {
 		return;
 	} else if (interaction.type == InteractionType.ApplicationCommand) {
 		GuildId = interaction.guildId;

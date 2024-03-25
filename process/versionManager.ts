@@ -181,10 +181,12 @@ export default class VersionManager {
 				this.client.process.set(_key[0],process);
 
 				this.sendMessage2Worker(_key[0], JSON.stringify({
-					type: "cluster",
+					process: {
+						type: "cluster",
+						versionType: name,
+					},
 					message: WorkerAction.shutdown,
 					processId: process.worker.process.pid,
-					versionType: name,
 				} as ProcessMessage<"cluster">))
 			}
 		}

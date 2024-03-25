@@ -7,7 +7,7 @@ import { icon } from "../../../../lib/icon";
 
 export function sendEmbed(server:CommunityServer | undefined,code:string,isEphemeral?:boolean):undefined {
 	
-	if(!isEphemeral) isEphemeral = true
+	if(!isEphemeral) isEphemeral = false
 	if(!server) return;
 	const embed = errorEmbed(server.guild.id,code)
 
@@ -23,9 +23,11 @@ export function sendEmbed(server:CommunityServer | undefined,code:string,isEphem
 				}
 			}
 		}
+	} else {
+		send_message({input:server,embed:[embed()]})
 	}
-	send_message({input:server,embed:[embed()]})
-}
+	}
+	
 
 function errorEmbed(guildId:string,code:string) {
 	let local: string;
@@ -41,7 +43,14 @@ function errorEmbed(guildId:string,code:string) {
 			local = 'ko';
 		}
 		const res = ErrorCode.filter((_code) => {return _code == code})
-		const list = {_0001,_0002,_0101,_0102,_0201,_0202,_0203,_0301,_0302,_0303,_0304,_0401,_0402,_0404,_0405,_0406}
+		const list = {
+			_0001,_0002,_0101,_0102,
+			_0201,_0202,_0203,
+			_0301,_0302,_0303,_0304,_0305,
+			_0401,_0402,_0404,_0405,_0406,_0407,_0408,
+			_0501,_0502,_0503
+		}
+
 		return list[res[0]]
 	// player error
 
@@ -91,6 +100,10 @@ function errorEmbed(guildId:string,code:string) {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("레니를 이용하기 위한 권한이 부족해요.","해당 채널에 \"연결할수있는 권한\"과 \"말할수있는 권한\"이 있는지 확인해주세요.")
 	}
+	function _0305() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("통방황에 연결하는데 문제가 생겼습니다. 잠시후 다시 시도해주세요!","( 게속 안된다면 다음을 확인해주세요! (레니봇 권한, 음성채널 권한) )")
+	}
 	function _0401() {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("현재 대기열이 비어있어요.","\"/재생\"을 통해 음악을 추가하고 이용할수있어요!")
@@ -112,8 +125,26 @@ function errorEmbed(guildId:string,code:string) {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("성인인증이 필요한 음악을 요청하셨어요!","연령제한 영상은 재생할수없습니다.")
 	}
-
-
+	function _0407() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("음악을 준비하는데 문제가 발생했어요.","잠시 후 다시 시도하거나 다른 음악을 요청해주세요.")
+	}
+	function _0408() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("빠르게 스킵 요청을 한거 같아요!","천천히 스킵해주세요.")
+	}
+	function _0501() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("재생목록 크기보다 더 큰 수의 스킵요청을 하셨어요.","")
+	}
+	function _0502() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("0보다 작은 수를 요청했어요..", "재생목록은 1부터 스킵할수있습니다.")
+	}
+	function _0503() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("플레이 리스트 정보가 없습니다....","대기열을 한번 초기화 후 다시 시도해주세요!")
+	}
 	function getEmbed(title: string, des: string): EmbedBuilder {
 		const embed = new EmbedBuilder()
 			.setAuthor({ iconURL:icon.warn,name: title })

@@ -14,17 +14,18 @@ import { Music } from './commands/music/common/music';
 import "./process/event/masterPCevent.index";
 import "./process/event/childPCevent.index";
 import "./process/event/childPCevent.message";
-import "./process/event/childPCevent.music";
 import music from './process/musicStream.music';
 import spam from './process/security.spam';
-import { queueItem } from './commands/music/common/yt_video/streamPlaylistData';
 import musicStream from './process/musicStream.stream';
+import { childPCevent_music } from './process/event/childPCevent.music';
+import { childPCevent_stream } from './process/event/childPCevent.stream';
+import { Stream } from './commands/stream/stream';
 declare module "discord.js" {
 	export interface Client {
 		commands: Collection<unknown, unknown>
 		cooldowns: Collection<unknown, unknown>
 		version: Collection<string, string>
-		streamQueue: Collection<string,queueItem[]>
+		streamQueue: Collection<string,Stream>
 		spam: Collection<string, SpamDetector>
 		previous_version_guilds:Set<string>
 		music: Collection<string,Music>
@@ -56,12 +57,6 @@ if (cluster.isPrimary) {
 	client.process = new Collection();
 	client.cooldowns = new Collection();
 	client.COOLDOWN_SECONDS = 1;
-
-	/**
-	 * main management collection
-	 */
-	client.music = new Collection();
-
 
 	client.once(Events.ClientReady, () => {
 		const emitter = new EventEmitter();
@@ -107,11 +102,13 @@ if (cluster.isPrimary) {
 				switch (ROLE[0]) {
 					case "music":
 						music();
+						childPCevent_music()
 						break;
 					case "spam":
 						spam()
 						break;
 					case "stream":
+						childPCevent_stream();
 						musicStream();
 						break;
 					}

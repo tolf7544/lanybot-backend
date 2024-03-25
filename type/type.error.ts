@@ -34,21 +34,25 @@ export enum DiscordClient {
 	failed_get_voice_channel = "_0302",
 	not_connected_voice_channel = "_0303",
 	failed_join_voice_channel = "_0304",
+	failed_join_voice_channel2 = "_0305",
 }
 
 // 400 - 500 
 export enum Streaming {
 	empty_queue = "_0401",
 	empty_voice_info = "_0402",
-	controling_on_empty_qeue = "_0404",
+	controling_on_empty_queue = "_0404",
 	fast_command_use = "_0405",
 	adult_contents = "_0406",
+	failed_get_readable_stream_data = "_0407",
+	fast_skip_request = "_0408"
 }
 
 // 500 - 600
 export enum StreamingQueue {
 	remove_over_max = "_0501",
-	remove_over_mini = "_0502"
+	remove_over_mini = "_0502",
+	unknown_queue = "_0503"
 }
 
 export const ErrorCode = [

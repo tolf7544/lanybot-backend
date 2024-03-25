@@ -45,6 +45,12 @@ export = {
 					.setDescriptionLocalization("ko", "스킵할 번호를 입력하시거나 바로 실행해주세요.")
 			})
 		})
+		.addSubcommand((input) => {
+			return input.setName('queue')
+			.setDescription('show queue')
+			.setNameLocalization("ko", "대기열")
+			.setDescriptionLocalization("ko", "현재 대기열을 보여드려요.")
+		})
 
 ,
 	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -59,11 +65,26 @@ export = {
 				case "skip":
 						music_skip(interaction)
 					break;
+				case "queue":
+						show_queue(interaction)
+					break;
 			}
 
 
 	},
 };
+
+async function show_queue(interaction:ChatInputCommandInteraction<CacheType>) {
+	const guildId = interaction.guildId
+	if (guildId) {
+		const music = useMusic(guildId, interaction)
+		if(!music) return;
+
+		music.update_user(interaction);
+		await music.showQueue()
+
+	}
+}
 
 async function music_skip(interaction: ChatInputCommandInteraction<CacheType>) {
 	const skipNumber = interaction.options.getInteger("number");

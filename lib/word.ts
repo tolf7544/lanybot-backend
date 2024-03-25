@@ -140,4 +140,14 @@ export class Lang {
 		if (this.local == 'en') return 'cancel'
 		else return '취소하기'
 	}
+
+	get showQueueButton_Title() {
+		if (this.local == 'en') return ['previous page','next page', 'cancel']
+		else return ['이전 페이지','다음 페이지','취소하기']
+	}
+
+	get showpQueue_Title() {
+		if (this.local == 'en') return 'Playing music'
+		else return '플레이리스트'
+	}
 }/*******************************************************************************************/

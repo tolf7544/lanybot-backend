@@ -1,4 +1,4 @@
-import { Message, ChatInputCommandInteraction, CacheType, BaseGuildTextChannel, BaseGuildVoiceChannel, ChannelType, Guild, GuildMember, TextBasedChannel, EmbedBuilder } from "discord.js";
+import { Message, ChatInputCommandInteraction, CacheType, BaseGuildTextChannel, BaseGuildVoiceChannel, ChannelType, Guild, GuildMember, TextBasedChannel, EmbedBuilder, APIEmbed } from "discord.js";
 import { CommunityServer } from "../type/type.common";
 import { Logger} from '../logManager';
 import { Lang } from "./word";
@@ -6,12 +6,11 @@ import { useGuild } from "./useGuild";
 
 
 
-export function interaction_reply(interaction: ChatInputCommandInteraction | undefined, components: any[],_embed: EmbedBuilder | undefined){
+export function interaction_reply(interaction: ChatInputCommandInteraction | undefined, components: any[],_embed: EmbedBuilder | APIEmbed | undefined){
 	if(interaction && _embed) {
 		if(interaction.channel) {
-			
 			if(interaction.isRepliable()) {
-				interaction.editReply({embeds:[_embed], components: components});
+				return interaction.editReply({embeds:[_embed], components: components});
 			}
 		}
 	}

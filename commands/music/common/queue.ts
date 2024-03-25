@@ -10,6 +10,7 @@ import { DiscordClient,  StreamingQueue, YTCrawler } from "../../../type/type.er
 import { checkPlaylistAdd } from "./playlist/checkAdd";
 import { serverLogger } from "../../../logManager";
 import { search } from "./search/search";
+import { debugging } from "../../..";
 
 export class Queue extends Map<number, Metadata> {
 
@@ -112,58 +113,59 @@ export class Queue extends Map<number, Metadata> {
 		return temp;
 	}
 
-	add(query: string, isNext: boolean): string | boolean | undefined {
-			if(!this.communityServer) return false; 
-			this.search_query(query).then((id_list) => {
-				if (typeof id_list == 'undefined') return false;
-				if (typeof id_list == "string") {
-					return id_list;
+	async add(query: string, isNext: boolean): Promise<string | boolean> {
+		if (!this.communityServer) return false;
+		const id_list = await this.search_query(query)
+		debugging(JSON.stringify({
+			id_list: id_list
+		}))
+		if (typeof id_list == 'undefined') return false;
+		if (typeof id_list == "string") {
+			return id_list;
+		} else {
+
+			if (id_list.length > 0) {
+				let id: videoId = ""
+				if (typeof id_list[0][0] == "string") {
+					id = id_list[0][0];
 				} else {
-					if (id_list.length > 0) {
-						let id: videoId = ""
-						if (typeof id_list[0][0] == "string") {
-							id = id_list[0][0];
-						} else {
-							return true
-						}
-						const music = new Metadata(id)
-						music.setMusic(this.communityServer as CommunityServer).then(() => {
-							if (isNext == true) {
-							
-								Array.from(this.entries()).filter((v) => {return v[0] > this.activeId}).forEach((_e) => {
-									this.set(_e[0]+1,_e[1])
-								})
-								this.set(this.activeId+1,music)
-							} else {
-								this.set(this.mapId,music)
-							}
-						})
-						return true
-					}
-					
-					if (id_list.length > 1) {
-						id_list.shift();
-						for (const video of id_list) {
-							const music = new Metadata(video[0])
-							music.MusicData.title = video[1]
-							music.MusicData.time = video[2]
-							if (isNext == true) {
-								const temp = this.get(Array.from(this.keys())[this.size - 1]) as Metadata 
-								Array.from(this.entries()).forEach((_e) => {
-									this.set(_e[0]+1,_e[1])
-								})
-								this.set(this.mapId,temp)
-							} else {
-								this.set(this.mapId,music)
-							}
-						}
-					}
-
 					return true
-				}	
-			});
+				}
+				const music = new Metadata(id)
+				await music.setMusic(this.communityServer as CommunityServer)
+				if (isNext == true) {
 
+					Array.from(this.entries()).filter((v) => { return v[0] > this.activeId }).forEach((_e) => {
+						this.set(_e[0] + 1, _e[1])
+					})
+					this.set(this.activeId + 1, music)
+				} else {
+					this.set(this.mapId, music)
+				}
+				return true
+			}
+
+			if (id_list.length > 1) {
+				id_list.shift();
+				for (const video of id_list) {
+					const music = new Metadata(video[0])
+					music.MusicData.title = video[1]
+					music.MusicData.time = video[2]
+					if (isNext == true) {
+						const temp = this.get(Array.from(this.keys())[this.size - 1]) as Metadata
+						Array.from(this.entries()).forEach((_e) => {
+							this.set(_e[0] + 1, _e[1])
+						})
+						this.set(this.mapId, temp)
+					} else {
+						this.set(this.mapId, music)
+					}
+				}
+			}
+
+			return true
 		}
+	}
 	
 	async search_query(input_query: string) {
 	

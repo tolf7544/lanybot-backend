@@ -1,7 +1,7 @@
 /** version collector */
 
 import { Worker } from "cluster"
-import { CommandInteraction, Guild, GuildChannel, GuildMember, Message, User } from "discord.js"
+import { Guild, GuildChannel, GuildMember, Message } from "discord.js"
 
 
 
@@ -39,13 +39,10 @@ export const VersionMessageCommandType = [
 
 /** interaction & message */
 export interface PreviewInteraction {
-	guild: Guild,
-	user: User,
-	member: GuildMember,
-	channel: GuildChannel,
-	command: CommandInteraction["command"],
+	guildId: string,
+	memberId: string,
+	channelId: string,
 	type: "interaction",
-	path: string
 }
 
 export interface PreviewMessage {

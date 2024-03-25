@@ -5,7 +5,7 @@ if(cluster.isWorker) {
 	process.on("message", ((message: string) => {
 		const _m: ProcessMessage<"cluster"> = JSON.parse(message)
 		
-		if (_m.type == "cluster" && _m.path) {
+		if (_m.process.type == "cluster" && _m.path) {
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const command = require(_m.path as string);
 			command.execute(_m)
