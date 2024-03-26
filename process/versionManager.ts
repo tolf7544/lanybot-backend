@@ -48,14 +48,14 @@ export default class VersionManager {
 						}).catch(() => {
 							/** 죽었을 때 002 */
 							debugging(JSON.stringify({
-								point: "generate_1",
+								point: "process generate [regenerate dead process]",
 							}))
 							generateProcess(target.name);
 						})
 					} else {
 						/** 생성되지 않았을 때 002 */
 						debugging(JSON.stringify({
-							point: "generate_2",
+							point: "process generate [not generate process]",
 						}))
 						generateProcess(target.name);
 					}

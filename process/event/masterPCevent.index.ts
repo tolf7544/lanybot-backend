@@ -21,20 +21,22 @@ if (cluster.isPrimary) {
 					}
 					
 					if(keys?.length == 1) {
-						generateProcess(_m.process.versionType, JSON.stringify([]));
+						generateProcess(_m.process.versionType, _m.collection);
 					} else {
 						if(keys) {
 							const key = keys[1];
-							client.process.get(key)?.worker.send(JSON.stringify({
-								process: {
-									type: "cluster",	
-									versionType: _m.process.versionType
-								},
-
-								message: WorkerAction.passPreviousVersionUserList,
-								collection:JSON.stringify([]) as string,
-								processId: worker.process.pid,
-							} as ProcessMessage<"cluster">))
+							if(client.process.get(key)?.worker.isConnected()) {
+								client.process.get(key)?.worker.send(JSON.stringify({
+									process: {
+										type: "cluster",	
+										versionType: _m.process.versionType
+									},
+	
+									message: WorkerAction.passPreviousVersionUserList,
+									collection:JSON.stringify([]) as string,
+									processId: worker.process.pid,
+								} as ProcessMessage<"cluster">))
+							}
 						}
 					}
 
@@ -52,6 +54,19 @@ if (cluster.isPrimary) {
 		if (_m.message == WorkerAction.sendCollection) {
 			if(keys?.length == 1) {
 				generateProcess(_m.process.versionType, _m.collection);
+			} else {
+				if(keys) {
+					const key = keys[1];
+					client.process.get(key)?.worker.send(JSON.stringify({
+						process: {
+							type: "cluster",	
+							versionType: _m.process.versionType
+						},
+						message: WorkerAction.passPreviousVersionUserList,
+						collection:_m.collection,
+						processId: worker.process.pid,
+					} as ProcessMessage<"cluster">))
+				}
 			}
 		}
 

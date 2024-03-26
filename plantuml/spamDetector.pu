@@ -1,0 +1,29 @@
+@startuml
+
+class SpamDetector {
+    - dfsps: float
+	- dfsl: float
+	- single_detect_freq_spam_per_sec: Map<string, MessageFreqFilter>
+	- single_detect_spam_url: Map<string, MessageURLFilter>
+
+	+ add_message_single(userId:string, message: string)
+}
+
+class MessageFreqFilter {
+	- collector: Array<{ time: number }>
+	- freq_collector: Array<{ time: number }>
+	- is_freq_loop_on: boolean
+	- maxSec: number
+	- limit: number
+
+	+ added_message()
+	- check_freq_sec(): number | -1
+	- private caculate_spam_score(x: number, y: number, distance_diff: number): number
+}
+
+class MessageURLFilter {
+	+ async checkURL(url:string):boolean
+}
+
+SpamDetector "1..*" *-- MessageFreqFilter
+SpamDetector "1..*" *-- MessageURLFilter

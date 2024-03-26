@@ -133,7 +133,7 @@ export class Music extends ClientResource {
 				this.queue.remove(skipNumber);
 			}
 		})
-		sendStreamPCMessage(MusicWorkerType.stream, "executeStream", {
+		sendStreamPCMessage(MusicWorkerType.stream, "skipStream", {
 			youtubeId: "undefined",
 			guildId: this.guild?.id as string,
 			memberId: this.member?.id as string,
@@ -152,7 +152,8 @@ export class Music extends ClientResource {
 					})
 			}
 			const page = new Pageination(rowData, 8);
-			
+			console.log(page.activePage.length)
+			console.log(this.queue.active())
 			if(page.activePage.length < 1 || !this.queue.active()) {
 				return this.sendEmbed(this.communityServer,StreamingQueue.unknown_queue)
 				/**

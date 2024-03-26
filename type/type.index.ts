@@ -9,9 +9,7 @@ import { Guild, GuildChannel, GuildMember, Message } from "discord.js"
 /**  */
 
 export enum SecurityVersionName {
-	warn = "warn",
-	spam = "spam",
-	imageFilter = "imageFilter",
+	security = "security",
 }
 
 
@@ -21,7 +19,7 @@ export enum MusicVersionName {
 }
 export const SlashCommandVersionName = {
 	...MusicVersionName,
-	[SecurityVersionName.warn]:SecurityVersionName.warn,
+	[SecurityVersionName.security]:SecurityVersionName.security,
 	
 }
 
@@ -33,8 +31,7 @@ export type VersionName = keyof typeof MusicVersionName | keyof typeof SecurityV
 export type Version = Record<VersionName , string>
 
 export const VersionMessageCommandType = [
-	SecurityVersionName.imageFilter,
-	SecurityVersionName.imageFilter
+	SecurityVersionName.security,
 ]
 
 /** interaction & message */

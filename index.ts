@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { token } = require('./config.json');
-import { Events, GatewayIntentBits, ActivityType, Collection, ClientUser } from 'discord.js';
+import { Events, GatewayIntentBits, ActivityType, Collection, ClientUser, Message } from 'discord.js';
 
 import { Client } from 'discord.js';
 import { EventEmitter } from 'events';
@@ -68,43 +68,18 @@ if (cluster.isPrimary) {
 		client.VM.VersionUpdator()
 	});
 
-	client.on(Events.MessageCreate, async (message) => {
-		for(const type of VersionMessageCommandType) {
-
-			const process = client.VM.useProcess(type, message.author.id)
-			process.then((process) => {
-				if(process) {
-					process.worker.send(
-						JSON.stringify({
-							guild: message.guild,
-							user: message.author,
-							member: message.member,
-							channel: message.channel,
-							contents: {
-								content: message.content,
-								id: message.id
-							},
-							type: "message",
-							path: process.path
-						})
-					)
-				}
-			})
-		}
-	})
 } else {
 	client.on(Events.ClientReady, () => {
 		setTimeout(() => {
 			if (ROLE.length == 0 || typeof ROLE[0] != "string") {
 				return process.exit();
 			} else {
-				console.log(ROLE[0])
 				switch (ROLE[0]) {
 					case "music":
 						music();
 						childPCevent_music()
 						break;
-					case "spam":
+					case "security":
 						spam()
 						break;
 					case "stream":
@@ -145,10 +120,30 @@ export const AddSlashCommand = () => {
 		}
 }
 
+export const messageReact = () => {
+	client.on(Events.MessageCreate, async (message:Message<boolean>) => {
+		for(const type of VersionMessageCommandType) {
+			const foldersPath = path.join(__dirname, 'commands/'+type);
+			const commandFiles = fs.readdirSync(foldersPath);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			for (const file of commandFiles.filter((file: string) => file.endsWith('.js'))) {
+
+					// eslint-disable-next-line @typescript-eslint/no-var-requires
+					const command = require(foldersPath+ "/" + file);
+	
+					if ('execute' in command) {
+						command.execute(message);
+					} else {
+						console.log(`[WARNING] The command at ${foldersPath+ "/" + file} is missing a required "data" or "execute" property.`);
+					}
+			}
+		}
+	})
+}
+
 export const InteractionReact = () => {
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (!interaction.isCommand()) return;
-		console.log(client.previous_version_guilds)
 		if(client.previous_version_guilds.has(interaction.guildId as string )) {
 			debugging(JSON.stringify({
 				"message":"previos user passing",

@@ -2,12 +2,16 @@
 
 start
 :sentence;
-:FastText word embbeding model;
 if (sentences.length > 2) then (yes)
 	:check cosine simularity each sentence;
 	:check spam;
-	:remove sentence;
+	if (message is spam) then (yes)
+		:remove sentence;
+	else (no)
+		:void;
+	endif
+	stop
 else (no)
-:save sentence unitl in time 5 second;
-endif
+	:save sentence unitl in time 1.5 second;
+	endif
 stop

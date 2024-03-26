@@ -3,11 +3,11 @@ import MessageURLFilter from "./UrlFilter"
 
 
 export default class SpamDetector {
-	dfsps = 1.5 //detect freq spam per second
-	dfsl = 2 // detect freq spam limit
+	private dfsps = 1.5 //detect freq spam per second
+	private dfsl = 2 // detect freq spam limit
 
-	dssps = 5 //detect sim spam per second
-	dssl = 90// detect sim spam limit
+	private dssps = 5 //detect sim spam per second
+	private dssl = 90// detect sim spam limit
 
 	//mutli_detect_freq_spam_per_sec: MessageFilter = new MessageFilter(this.dsps, this.dsl)
 	//mutli_detect_freq_spam_per_min: MessageFilter = new MessageFilter(this.dspm, this.dsl)
@@ -15,11 +15,11 @@ export default class SpamDetector {
 	//mutli_detect_mean_spam_per_sec: MessageFilter = new MessageFilter(this.dsps, this.dsl, "char")
 	//mutli_detect_mean_spam_per_min: MessageFilter = new MessageFilter(this.dspm, this.dsl, "char")
 
-	single_detect_freq_spam_per_sec: Map<string/** user id */, MessageFreqFilter> = new Map() 
+	private single_detect_freq_spam_per_sec: Map<string/** user id */, MessageFreqFilter> = new Map() 
 	
-	single_detect_mean_spam_per_sec: Map<string/** user id */, MessageFreqFilter> = new Map()
+	private single_detect_mean_spam_per_sec: Map<string/** user id */, MessageFreqFilter> = new Map()
 
-	single_detect_spam_url: Map<string/** user id */, MessageURLFilter> = new Map()
+	private single_detect_spam_url: Map<string/** user id */, MessageURLFilter> = new Map()
 
 	constructor(_dfsps?:number, _dfsl?:number,_dssps?:number, _dssl?:number) {
 		if(_dfsps) {this.dfsps = _dfsps}
@@ -62,7 +62,7 @@ export default class SpamDetector {
 		// }
 
 		(this.single_detect_freq_spam_per_sec.get(userId) as MessageFreqFilter)
-		.added_message().then(() => {
+		.added_message().then((score) => {
 			
 		});
 
