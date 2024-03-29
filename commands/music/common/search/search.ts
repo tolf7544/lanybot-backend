@@ -143,7 +143,7 @@ export function search(server: CommunityServer, query: string): Promise<string |
 								if (listId) {
 									if (searchingQueueMap.has(listId[1].replace(".", "") + listId[0].replace(".", ""))) {
 										const id = interaction.values[0].replace(`${listId[0]}${listId[1]}`, "")
-
+										interaction.deferUpdate();
 										resolve([id])
 									} else {
 										if (searchingQueueMap.has(id)) {

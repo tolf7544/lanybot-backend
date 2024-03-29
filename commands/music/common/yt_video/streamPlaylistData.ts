@@ -52,9 +52,6 @@ export function getPlaylist(url: string): Promise<queueItem[]> {
                         }
                     }
                 }
-
-
-
                 return playlist
 
             } catch (e) {
@@ -79,7 +76,7 @@ export function getPlaylist(url: string): Promise<queueItem[]> {
                     url = `https://www.youtube.com/watch?v=${vid[0]}&list=${id.replace(/[?&]list=/g, '')}&start_radio=1`;
                     parser(url);
                 }).catch(() => {
-                    return reject(error_logger(` catched error(return reject):line:71(on typescript)\n module rejected:line:78(on typescript)\n[issue] playlist id doesn't found in url included video id  by regex\nURL -> ${url}`))
+                    return reject(error_logger(`catched error(return reject):line:71(on typescript)\n module rejected:line:78(on typescript)\n[issue] playlist id doesn't found in url included video id  by regex\nURL -> ${url}`))
                 })
             } else {
                 return reject(error_logger(` url can't specificed :line:70 && 62 (on typescript)\n module rejected:line:81(on typescript)\n[issue] url format is not matched \nURL -> ${url}`))

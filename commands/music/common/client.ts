@@ -5,12 +5,14 @@ import { sendEmbed } from "./error/embed";
 import { Lang } from "../../../lib/word";
 import { serverLogger } from "../../../logManager";
 import { PreviewInteraction } from "../../../type/type.index";
+import { MessageType } from "../../../type/type.queue";
 
 export class ClientResource {
 	guild: Guild | undefined
 	channel: BaseGuildTextChannel | BaseGuildVoiceChannel | TextBasedChannel | undefined
 	member: GuildMember | undefined
 	communityServer: CommunityServer | undefined
+	messages: Map<MessageType, Message<boolean>> = new Map();
 	lang: Lang
 	logger = new serverLogger()
 	

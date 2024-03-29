@@ -6,13 +6,23 @@ import { useGuild } from "./useGuild";
 
 
 
-export function interaction_reply(interaction: ChatInputCommandInteraction | undefined, components: any[],_embed: EmbedBuilder | APIEmbed | undefined){
+export async function interaction_reply(interaction: ChatInputCommandInteraction | undefined, components: any[],_embed: EmbedBuilder | APIEmbed | undefined){
 	if(interaction && _embed) {
 		if(interaction.channel) {
 			if(interaction.isRepliable()) {
-				return interaction.editReply({embeds:[_embed], components: components});
+				if(!interaction.deferred) {
+					await interaction.deferReply()
+				}
+				return await interaction.editReply({embeds:[_embed], components: components});
+
+			} else {
+				return false
 			}
+		} else {
+			return false
 		}
+	} else {
+		return false
 	}
 }
 

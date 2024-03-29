@@ -150,4 +150,153 @@ export class Lang {
 		if (this.local == 'en') return 'Playing music'
 		else return '플레이리스트'
 	}
+
+	get addEmbed_Title() {
+		if (this.local == 'en') return 'Added to your playlist.'
+		else return '대기열에 추가되었습니다.'
+	}
+
+	get addEmbed_Description() {
+		if (this.local == 'en') return ['Playtime','queue number']
+		else return ['재생시간','대기열 번호']
+	}
+	get resume_Title() {
+		if (this.local == 'en') return 'Unpause the music.'
+		else return '일시정지를 해제합니다.'
+	}
+
+	get skip_Title() {
+		if (this.local == 'en') return 'the music skipped'
+		else return '스킵되었습니다.'
+	}
+				
+		
+	get pause_Title() {
+		if (this.local == 'en') return 'Pause music.'
+		else return "음악이 일시정지되었습니다."
+	}
+
+	get end_Title() {
+		if (this.local == 'en') return 'All music played.'
+		else return '모든 음악이 재생되었습니다.'
+	}		
+		
+	get shuffle_Title() {
+		if (this.local == 'en') return ['A total of',' songs have been shuffled.','The shuffle succeeded.']
+		else return ['외','곡의 음악이 셔플되었습니다','셔플에 성공하였습니다']
+	}
+
+	get loopSingle_Title() {
+		if (this.local == 'en') return 'loop the currently playing music.'
+		else return '현재 재생중인 음악을 반복재생합니다.'
+	}
+				
+		
+	get loopAll_Title() {
+		if (this.local == 'en') return 'loop all the music in the queue'
+		else return '대기열에 있는 모든 음악을 반복재생합니다.'
+	}
+
+	get loopAll_Description() {
+		if (this.local == 'en') return 'All queue'
+		else return "전체 대기열"
+	}
+	
+		
+	get loopFooter_Title() {
+		if (this.local == 'en') return 'Once loop starts, i\'ll not send any more messages until loop is ended!'
+		else return '반복재생을 시작하면 해제 될 때까지 더 이상 메시지를 보내지 않습니다!'
+	}
+
+	get loopExit_Title() {
+		if (this.local == 'en') return 'Stop loop.'
+		else return "반복재생을 종료합니다!"
+	}
+					
+		
+	get loopExitFooter_Title() {
+		if (this.local == 'en') return 'From now on, the music will play without loop!'
+		else return "이제부터 정상적으로 음악이 재생됩니다!"
+	}
+
+	get loop_Description() {
+		if (this.local == 'en') return 'Loop:'
+		else return '반복재생:'
+	}
+
+	get errorPlayEmbedUnknown_Title() {
+		if (this.local == 'en') return 'An unknown error has occured'
+		else return "알수없는 오류가 발생했어요."
+	}
+		
+		
+	get errorPlayEmbedUnknown_Description() {
+		if (this.local == 'en') return 'The music will be played, but the system message won\'t be sent'
+		else return "음악는 재생되지만 메시지를 전송할수없습니다."
+	}
+		
+	get playEmbed_Title() {
+		if (this.local == 'en') return 'Start playing!'
+		else return '음악을 재생합니다!'
+	}
+
+	get playEmbed_Description() {
+		if (this.local == 'en') return ['Playtime','queue length']
+		else return ['재생시간','대기중인 음악 갯수']
+	}
+	get clearSystemMsg_embedE_Title() {
+		if (this.local == 'en') return 'Music ended unsteadily.'
+		else return `음악이 불안정하게 끝났습니다.`
+	}
+
+	get clearSystemMsg_embedE_Description() {
+		if (this.local == 'en') return ['Played music is','']
+		else return ['재생된 음악는','입니다.']
+	}
+
+	get clearSystemMsg_embedE1_Title() {
+		if (this.local == 'en') return 'You cannot play the video because it is prohibited from playing in us-west.'
+		else return `\`us-west\`에서 재생이 금지된 영상이므로 재생할 수 없습니다.`
+	}
+
+
+
+	get clearSystemMsg_embedE_Footer() {
+		if (this.local == 'en') return ['If you want to hear it again, please search by title or','']
+		else return ['만약 다시 듣고싶으면 제목이나','로 검색해주세요!.']
+	}
+	
+	get clearSystemMsg_embed_Title() {
+		if (this.local == 'en') return 'Music is over.'
+		else return '음악이 끝났습니다.'
+	}
+
+	get clearSystemMsg_embedLoop_Title() {
+		if (this.local == 'en') return 'Replaying the playlist from now on!'
+		else return `이제부터 반복재생이 시작됩니다!`
+	}
+	get nextStream_title() {
+		if (this.local == 'en') return "Play next song."
+		else return "다음 음악을 재생합니다"
+	}
+	get nextStream_title2() {
+		if (this.local == 'en') return "The command cannot be executed as this music is the last in the queue."
+		else return "해당 음악이 대기열의 마지막 음악이므로 명령어를 실행할수없습니다."
+	}
+	get clearSystemMsg_Description() {
+		if (this.local == 'en') return 'title'
+		else return '제목'
+	}
+	get clear_queue_title() {
+		if (this.local == 'en') return 'removed all queue.'
+		else return "대기열을 초기화하였습니다."
+	}
+	get preStream_title() {
+		if (this.local == 'en') return "play music that was in previous queue."
+		else return "이전 대기열에 있던 음악을 재생합니다"
+	}
+	get preStream_title2() {
+		if (this.local == 'en') return "The command cannot be executed as this music is the first in the queue."
+		else return "해당 음악이 대기열의 첫번째 음악이므로 명령어를 실행할수없습니다."
+	}
 }/*******************************************************************************************/

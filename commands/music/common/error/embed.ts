@@ -10,7 +10,7 @@ export function sendEmbed(server:CommunityServer | undefined,code:string,isEphem
 	if(!isEphemeral) isEphemeral = false
 	if(!server) return;
 	const embed = errorEmbed(server.guild.id,code)
-
+	console.log(embed)
 	if(server.interaction) {
 		if(server.interaction.channel) {
 			if(server.interaction.isRepliable()) {
@@ -47,8 +47,9 @@ function errorEmbed(guildId:string,code:string) {
 			_0001,_0002,_0101,_0102,
 			_0201,_0202,_0203,
 			_0301,_0302,_0303,_0304,_0305,
-			_0401,_0402,_0404,_0405,_0406,_0407,_0408,
-			_0501,_0502,_0503
+			_0401,_0402,_0404,_0405,_0406,_0407,_0408,_0409,
+			_0501,_0502,_0503,
+			_1001
 		}
 
 		return list[res[0]]
@@ -133,6 +134,10 @@ function errorEmbed(guildId:string,code:string) {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("빠르게 스킵 요청을 한거 같아요!","천천히 스킵해주세요.")
 	}
+	function _0409() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("해당 영상은 us-west에서 재생할 수 없는 영상입니다.","다른 음악을 요청해주세요.")
+	}
 	function _0501() {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("재생목록 크기보다 더 큰 수의 스킵요청을 하셨어요.","")
@@ -144,6 +149,10 @@ function errorEmbed(guildId:string,code:string) {
 	function _0503() {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("플레이 리스트 정보가 없습니다....","대기열을 한번 초기화 후 다시 시도해주세요!")
+	}
+	function _1001() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("모든 음악을 재생하였습니다!", "")
 	}
 	function getEmbed(title: string, des: string): EmbedBuilder {
 		const embed = new EmbedBuilder()

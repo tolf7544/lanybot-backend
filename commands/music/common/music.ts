@@ -9,7 +9,7 @@ import { AudioPlayer, VoiceConnection } from "@discordjs/voice";
 import { error } from "winston";
 import { DiscordClient, Streaming, StreamingQueue } from "../../../type/type.error";
 import { Lang } from "../../../lib/word";
-import { CommunityServer } from "../../../type/type.common";
+import { CommunityServer } from '../../../type/type.common';
 import { action, command, status } from "../../../type/type.log";
 import { Metadata } from "./queue/metadata";
 import { sendStreamPCMessage } from "./useStreamPC";
@@ -17,6 +17,7 @@ import { MusicWorkerType } from "../../../type/type.versionManager";
 import { Pageination } from "../../../lib/pageInation";
 import { setTime } from "./yt_video/getMusicData";
 import { interaction_reply } from "../../../lib/sendMessage";
+import { addEmbed, clearSystemMsg, endEmbed, playEmbed, skipEmbed } from "./embed";
 
 export function useMusic(guildId:string,i?:ChatInputCommandInteraction) {
 	if(client.music.has(guildId)) {
@@ -62,83 +63,101 @@ export class Music extends ClientResource {
 		}
 	}
 
+	useServer(): Promise<CommunityServer> {
+		return new Promise((resolve: ((success:CommunityServer) => void),reject:((error:boolean) => void)) => {
+			if(!this.communityServer) {
+				reject(false);
+			} else if(!this.communityServer.interaction) {
+				reject(false);
+			} else {
+				resolve(this.communityServer);
+			}
+		})
 
-	play(input_query: string, isNext: boolean) {
-
+	}
+	
+	play(query: string, isNext: boolean) {
 		this.checkUserPlayState().then(() => {
-			let metadata: Metadata | undefined;
-
-			this.queue.add(input_query, isNext).then((result) => {
-				if (typeof result == "string") { this.sendEmbed(this.communityServer, result) }
-				if (result != true) return;
-
-				if (!this.connection || !this.player) {
-					let autoSkippedCount = 0;
-					for (let i = 0; i < this.queue.size; i++) {
-						metadata = this.queue.active()
-						if (!metadata) {
-							this.queue.remove();
-							autoSkippedCount += 1;
-						} else {
-							break;
-						}
+			this.useServer().then(async (server) => {
+				this.queue.add(query, isNext, server, ((metadata: Metadata) => {
+					if (this.queue.size > 1) {
+						addEmbed(
+							metadata as Metadata,
+							this.communityServer as CommunityServer,
+							this.queue.size
+						)
+					} else {
+						this.playStream(metadata);
 					}
-
-					if (autoSkippedCount > 0) {
-						/**
-						 * title: 음악을 재생하는데 문제가 생겼어요...
-						 * description:  총 ${autoSkippedCount}개의 음악이 스킵되었습니다!
-						 */
-					}
-					this.checkQueueSize(async () => {
-						metadata = metadata as Metadata
-						if (metadata.MusicData) {
-							// send message 
-							metadata.setMusic(this.communityServer as CommunityServer).then(() => {
-								/**
-								 * 
-								 * play embed
-								 * 
-								 */
-							})
-						}
-						sendStreamPCMessage(MusicWorkerType.stream, "executeStream", {
-							youtubeId: metadata.id,
-							guildId: this.guild?.id as string,
-							memberId: this.member?.id as string,
-							channelId: this.channel?.id as string
-						})
-						/**
-						 * 
-						 * streaming source code
-						 * 
-						 */
-					})
-				} else {
-					// if (isNextAdd == true) this.addEmbed(this.queue[this.activeStreamIndex + 1], this.queue.length) // 현재 재생하는 노래의 다음 어레이 위치에 있는 music 클래스 입력
-					// if (isNextAdd == false) this.addEmbed(this.queue[this.queue.length - 1], this.queue.length) // 현재 어레이 마지막에 위치한 music 클래스 입력
-				}
+				}))
 			})
 		})
 	}
 
-	skip(skipNumber:number | null):void {
-		console.log(this.queue.keys())
+	playStream(metadata: Metadata | undefined) {
+		this.useServer().then(async (server) => {
+		this.checkQueueSize(async () => {
+			metadata = metadata as Metadata;
+			if (metadata?.MusicData) {
+				metadata.setMusic(this.communityServer as CommunityServer).then(() => {
+					playEmbed(
+						metadata as Metadata,
+						server,
+						this.lang,
+						this.queue.size
+						)
+				});
+			} else {
+				return this.sendEmbed(this.communityServer,StreamingQueue.unknown_queue)
+			}
+
+			sendStreamPCMessage(MusicWorkerType.stream, "executeStream", {
+				youtubeId: metadata.id,
+				guildId: this.guild?.id as string,
+				memberId: this.member?.id as string,
+				channelId: this.channel?.id as string
+			});
+		});
+		return metadata;
+		})
+	}
+
+	skip(skipNumber: number | null): void {
 		this.checkUserControlQueueState().then(() => {
+			let metadata: string | Metadata | undefined
 			if (!skipNumber) {
 				//this.queue.activeId
-				this.queue.remove();
+				metadata = this.queue.remove();
+
 			} else {
 				//skipNumber
-				this.queue.remove(skipNumber);
+				metadata = this.queue.remove(skipNumber);
+			}
+			
+			if (typeof metadata == "string") {
+				this.sendEmbed(this.communityServer, metadata)
+			} else if (metadata && this.communityServer) {
+				clearSystemMsg("common",this.lang,this.communityServer?.guild.id,metadata)
+				skipEmbed(metadata, this.communityServer)
 			}
 		})
+		this.queue.action.isSkip = true;
 		sendStreamPCMessage(MusicWorkerType.stream, "skipStream", {
 			youtubeId: "undefined",
 			guildId: this.guild?.id as string,
 			memberId: this.member?.id as string,
 			channelId: this.channel?.id as string
 		})
+	}
+
+	loop(loopState: Queue["loop"]) {
+		this.queue.loop = loopState;
+
+		/**
+		 * 
+		 * embed 작성
+		 * 
+		 */
 	}
 
 	showQueue() {
@@ -152,8 +171,7 @@ export class Music extends ClientResource {
 					})
 			}
 			const page = new Pageination(rowData, 8);
-			console.log(page.activePage.length)
-			console.log(this.queue.active())
+			page.PageSetting();
 			if(page.activePage.length < 1 || !this.queue.active()) {
 				return this.sendEmbed(this.communityServer,StreamingQueue.unknown_queue)
 				/**
@@ -168,6 +186,7 @@ export class Music extends ClientResource {
 				const message = interaction_reply(this.communityServer?.interaction,[this.controlComponents(false,true,false)],this.showQueueEmbed(page))
 				if(message) {
 					message.then((_message) => {
+						if(!_message) return;
 						const filter = (i: Interaction<CacheType>) => i.user.id == this.communityServer?.member.id;
 						const collector = _message.createMessageComponentCollector({ filter, time: 1000 * 60 * 60 })
 					
@@ -206,6 +225,57 @@ export class Music extends ClientResource {
 				}
 			}
 			
+		})
+	}
+
+	pause() {
+		this.checkUserControlQueueState().then(() => {
+			if(this.queue.action.isPause == true) {
+				/**
+				 * 
+				 * 이미 pause가 적용됨 안내 메시지 보내기
+				 * 
+				 */
+			} else {
+				sendStreamPCMessage(MusicWorkerType.stream, "pauseStream", {
+					youtubeId: "undefined",
+					guildId: this.guild?.id as string,
+					memberId: this.member?.id as string,
+					channelId: this.channel?.id as string
+				})
+			}
+		})
+	}
+
+	resume() {
+		this.checkUserControlQueueState().then(() => {
+			if(this.queue.action.isPause == false) {
+				/**
+				 * 
+				 * 이미 pause가 적용됨 안내 메시지 보내기
+				 * 
+				 */
+			} else {
+				sendStreamPCMessage(MusicWorkerType.stream, "resumeStream", {
+					youtubeId: "undefined",
+					guildId: this.guild?.id as string,
+					memberId: this.member?.id as string,
+					channelId: this.channel?.id as string
+				})
+			}
+		})
+	}
+
+	clear() {
+		this.checkUserControlQueueState().then(() => {
+			this.queue.action.isClear = true;
+
+			sendStreamPCMessage(MusicWorkerType.stream, "clearStream", {
+				youtubeId: "undefined",
+				guildId: this.guild?.id as string,
+				memberId: this.member?.id as string,
+				channelId: this.channel?.id as string
+			})
 		})
 	}
 
@@ -269,12 +339,18 @@ export class Music extends ClientResource {
 	}
 
 	private checkQueueSize(run: CallableFunction) {
-		if(this.queue.size == 0) {
-			/** send message
-			 * 
-			 * 음악이 모두 재생되었습니다.
-			 * 
-			 *  */
+		if(this.queue.size == 0 || !this.queue.active()) {
+			if(this.communityServer) {
+				sendStreamPCMessage(MusicWorkerType.stream,"clearStream",{
+					guildId: this.communityServer.guild.id,
+					youtubeId: "undefined",
+					memberId: "undefined",
+					channelId: "undefined"
+				})
+				this.queue.clear();
+				this.queue.activeId = 0
+				endEmbed(this.communityServer)
+			}
 		} else {
 			run();
 		}
@@ -283,13 +359,10 @@ export class Music extends ClientResource {
 
 
 	private checkUserViewQueueState(): Promise<void> {
-		return new Promise((resolve,reject) => {
+		return new Promise((resolve) => {
 			if (this.queue.size == 0){
 				this.sendEmbed(this.communityServer,Streaming.empty_queue)
-				reject();
-				}
-			if(!this.connection|| !this.player) {
-				return this.sendEmbed(this.communityServer,Streaming.empty_voice_info)
+				return;
 			}
 			resolve()
 		})

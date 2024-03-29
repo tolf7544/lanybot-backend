@@ -22,5 +22,12 @@ export enum FailedReason {
 	EarlySkipping = "EarlySkipping",
 	MusicIsIdle = "MusicIsIdle",
 	FailedConnectChannel = "FailedConnectChannel",
-	FailedGetReadableStream = "FailedGetReadableStream"
+	FailedGetReadableStream = "FailedGetReadableStream",
+	VideoUnavailable = "VideoUnavailable",
+	FailedPlayStream = "FailedPlayStream",
+	UndefinedPlayerState = "UndefinedPlayerState",
+	UndefinedConnectionState = "UndefinedConnectionState",
+	AlreadyPaused = "AlreadyPaused",
+	AlreadyPlaying = "AlreadyPlaying",
+	ReadyForStream = "ReadyForStream"
 }

@@ -1,7 +1,7 @@
 import cluster from "cluster";
 import { client, debugging, ROLE } from "../..";
 import { ProcessMessage, WorkerAction } from "../../type/type.versionManager";
-import { executeStream, skipStream } from "../../commands/stream/musicStream";
+import { clearStream, executeStream, pauseStream, skipStream, unpauseStream } from "../../commands/stream/musicStream";
 import { MusicWorkerAction } from "../../type/type.stream";
 
 
@@ -64,6 +64,12 @@ export function childPCevent_stream() {
 						return executeStream(_m.data);
 					} else if(_m.process.music.action == MusicWorkerAction.skipStream) {
 						return skipStream(_m.data);
+					} else if(_m.process.music.action == MusicWorkerAction.clearStream) {
+						return clearStream(_m.data);
+					} else if(_m.process.music.action == MusicWorkerAction.pauseStream) {
+						return pauseStream(_m.data);
+					} else if(_m.process.music.action == MusicWorkerAction.resumeStream) {
+						return unpauseStream(_m.data);
 					}
 				}
 			}

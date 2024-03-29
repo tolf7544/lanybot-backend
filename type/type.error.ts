@@ -45,7 +45,8 @@ export enum Streaming {
 	fast_command_use = "_0405",
 	adult_contents = "_0406",
 	failed_get_readable_stream_data = "_0407",
-	fast_skip_request = "_0408"
+	fast_skip_request = "_0408",
+	video_unavailable = "_0409",
 }
 
 // 500 - 600
@@ -55,10 +56,18 @@ export enum StreamingQueue {
 	unknown_queue = "_0503"
 }
 
+
+// 1000 - 1100
+export enum StreamingMessage {
+	finished_music = "_1001",
+}
+
 export const ErrorCode = [
 	...Object.values(Streaming),
 	...Object.values(YTCrawler),
 	...Object.values(DiscordMessage),
 	...Object.values(Common),
 	...Object.values(DiscordClient),
+	...Object.values(StreamingMessage),
+	...Object.values(StreamingQueue),
 ]

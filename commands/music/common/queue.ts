@@ -11,13 +11,24 @@ import { checkPlaylistAdd } from "./playlist/checkAdd";
 import { serverLogger } from "../../../logManager";
 import { search } from "./search/search";
 import { debugging } from "../../..";
-
+import { sendEmbed } from './error/embed';
 export class Queue extends Map<number, Metadata> {
 
 	communityServer: CommunityServer | undefined
 	logger = new serverLogger()
 	activeId: number = 0
-	loop: "single"|"all"|"false"
+	loop: "single"|"all"|"false" = "false"
+	action: {
+		isSkip: boolean 
+		isClear: boolean
+		isPreviousStream: boolean
+		isPause: boolean
+	} = {
+		isSkip: false,
+		isClear:false,
+		isPreviousStream: false,
+		isPause: false
+	}
 	constructor(input: ChatInputCommandInteraction) {
 		super();
 
@@ -30,7 +41,7 @@ export class Queue extends Map<number, Metadata> {
 		if(keys.length == 0) {
 			return 0
 		} else {
-			return keys.pop() as number
+			return keys.pop() as number +1 
 		}
 	}
 
@@ -49,12 +60,10 @@ export class Queue extends Map<number, Metadata> {
 		let temp:Metadata | undefined;
 
 		if (!number) {
-			if(this.activeId != 0) {
-				this.activeId -= 1
-			}
 
 			temp = this.get(this.activeId);
 			this.delete(this.activeId)
+			this.activeId += 1;
 			return temp;
 		} else {
 			if (number > this.size) {
@@ -64,22 +73,26 @@ export class Queue extends Map<number, Metadata> {
 				return StreamingQueue.remove_over_mini
 			}
 
-			if (number < this.activeId) {
-				this.activeId -= 1;
-			}
 			const key = Array.from(this.keys())[number - 1]
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 			temp = this.get(key);
 			this.delete(key)
+
 			return temp;
 		}
 	}
 
+
 	active() {
-		const _key = Array.from(this.keys())[this.activeId]
-		const temp = this.get(_key)
+		const _key = Array.from(this.keys()).filter((_v) => { return _v == this.activeId})
+		const temp = this.get(_key[0])
 
 		return temp;
+	}
+
+	activePosition() {
+		return Array.from(this.keys()).indexOf(this.activeId)
 	}
 
 	setLoop(option:"single"|"all"|"false") {
@@ -90,16 +103,13 @@ export class Queue extends Map<number, Metadata> {
 		if(this.loop == "single") {
 			/** pass */
 		} else if(this.loop == "all") {
-			if(this.activeId+1 > this.size) {
-				this.activeId = 0;
-			} else {
-				this.activeId += 1
+			if(this.activePosition()+1 == this.size) {
+				this.activeId = Array.from(this.keys()).shift() as number;
 			}
-		} else {
-			this.activeId += 1
 		}
 
-		const _key = Array.from(this.keys())[this.activeId]
+		const _key = Array.from(this.keys())[this.activePosition() + 1]
+		this.activeId = _key;
 		const temp = this.get(_key)
 
 		return temp;
@@ -113,100 +123,126 @@ export class Queue extends Map<number, Metadata> {
 		return temp;
 	}
 
-	async add(query: string, isNext: boolean): Promise<string | boolean> {
-		if (!this.communityServer) return false;
-		const id_list = await this.search_query(query)
-		debugging(JSON.stringify({
-			id_list: id_list
-		}))
-		if (typeof id_list == 'undefined') return false;
-		if (typeof id_list == "string") {
-			return id_list;
-		} else {
+	add(query: string, isNext: boolean, server: CommunityServer, callback: CallableFunction): void {
+			this.search_query(query, server).then((ids) => {
+				debugging(JSON.stringify({
+					ids: ids
+				}))
 
-			if (id_list.length > 0) {
-				let id: videoId = ""
-				if (typeof id_list[0][0] == "string") {
-					id = id_list[0][0];
+				if (typeof ids == "string") {
+					sendEmbed(server, ids);
 				} else {
-					return true
-				}
-				const music = new Metadata(id)
-				await music.setMusic(this.communityServer as CommunityServer)
-				if (isNext == true) {
+					if (ids.length > 0) {
+						let id: videoId = ""
+						id = ids[0][0];
+						const music = new Metadata(id)
+						music.setMusic(server).then((result: string | void) => {
+							if (typeof result == "string") {
+								sendEmbed(server, result)
+							} else {
+								if (isNext == true) {
 
-					Array.from(this.entries()).filter((v) => { return v[0] > this.activeId }).forEach((_e) => {
-						this.set(_e[0] + 1, _e[1])
-					})
-					this.set(this.activeId + 1, music)
-				} else {
-					this.set(this.mapId, music)
-				}
-				return true
-			}
+									Array.from(this.entries()).filter((v) => { return v[0] > this.activeId }).forEach((_e) => {
+										this.set(_e[0] + 1, _e[1])
+									})
+									this.set(this.activeId + 1, music)
+								} else {
+									this.set(this.mapId, music)
+								}
+							}
 
-			if (id_list.length > 1) {
-				id_list.shift();
-				for (const video of id_list) {
-					const music = new Metadata(video[0])
-					music.MusicData.title = video[1]
-					music.MusicData.time = video[2]
-					if (isNext == true) {
-						const temp = this.get(Array.from(this.keys())[this.size - 1]) as Metadata
-						Array.from(this.entries()).forEach((_e) => {
-							this.set(_e[0] + 1, _e[1])
+							if (ids.length > 1) {
+								ids.shift();
+								for (const video of ids) {
+									const music = new Metadata(video[0])
+									music.MusicData.title = video[1]
+									music.MusicData.time = video[2]
+									if (isNext == true) {
+										const temp = this.get(Array.from(this.keys())[this.size - 1]) as Metadata
+										Array.from(this.entries()).forEach((_e) => {
+											this.set(_e[0] + 1, _e[1])
+										})
+										this.set(this.mapId, temp)
+									} else {
+										this.set(this.mapId, music)
+									}
+								}
+							}
+
+							callback(music);
 						})
-						this.set(this.mapId, temp)
 					} else {
-						this.set(this.mapId, music)
+						/**
+						 * 
+						 * 오류 
+						 * 
+						 * 재생 목록 존재 x
+						 */
 					}
 				}
-			}
+			}).catch((reason: string) => {
+				sendEmbed(server, reason)
+			})
 
-			return true
-		}
 	}
 	
-	async search_query(input_query: string) {
-	
-		let id: string | null = null;
-		try { id = ytdl.getURLVideoID(input_query) } catch (error) { /** empty */ }
-		// eslint-disable-next-line no-useless-escape
-		const pl_id = input_query.match(/[?&]list=([^#\&\?]+)/g)
+	search_query(query: string, server: CommunityServer) {
+		return new Promise((resolve:((success:PlaylistItem[]) => void),reject:((success:string | null) => void)) => {
 
-		let id_list: PlaylistItem[] = []
-		if (!this.communityServer) return DiscordClient.failed_get_client
+		
+		let id: string | null = null;
+		try { id = ytdl.getURLVideoID(query) } catch (error) { /** empty */ }
+		// eslint-disable-next-line no-useless-escape
+		const pl_id = query.match(/[?&]list=([^#\&\?]+)/g)
+
+		let ids: PlaylistItem[] = []
+		if (!this.communityServer) {
+			return reject(DiscordClient.failed_get_client)
+		}
 
 		if (id) {
 			/** id 기반 재생 */
 			if (pl_id) {
-				const playlist_list: PlaylistItem[] = await getPlaylist(pl_id[0]);
-				console.log(playlist_list)
-				if (playlist_list == undefined) return YTCrawler.playlist_is_undefined
-				if (playlist_list.length == 0) return YTCrawler.playlist_zero_size
-
-				const result = await checkPlaylistAdd(playlist_list, this.communityServer).catch((res) => {
+				getPlaylist(pl_id[0]).catch((res) => {
 					this.logger.writeLog(res[0]);
-					return res[1]
-				});
-				if (result == true) id_list = id_list.concat(playlist_list);
-				else id_list.push(playlist_list[0])
+				}).then((playlist) => {
+
+				if (playlist == undefined) {
+					return reject(YTCrawler.playlist_is_undefined)
+				}
+				if (playlist.length == 0) {
+					return reject(YTCrawler.playlist_zero_size)
+				}
+
+				checkPlaylistAdd(playlist, server).catch((reason) => {
+					this.logger.writeLog(reason[0]);
+					return reject(reason[1])
+				}).then((result) => {
+					if(typeof result == "object") {
+						if (result.data == true) ids = ids.concat(playlist);
+						else ids.push(playlist[0])
+					} else {
+						return reject(null);
+					}
+				})
+				})
 			}
 
 			if (id && typeof id == 'string') {
-				id_list.unshift([id, "undefined", "undefined"])
+				ids.unshift([id, "undefined", "undefined"])
 			}
 
-			return id_list;
+			resolve(ids);
 		} else {
 			/** 검색 필요 */
-			const res = await search(this.communityServer,input_query)
-			if (typeof res == "object") {
-				id_list.push([res[0], "undefined", "undefined"])
-				return id_list
-			} else {
-				return res
-			}
+			search(this.communityServer,query).then((result) => {
+				ids.push([result[0], "undefined", "undefined"])
+				resolve(ids)
+		}).catch((reason) => {
+			reject(reason);
+		})
 		}
+	})
 	}
+	
 }

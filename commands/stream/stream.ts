@@ -8,6 +8,7 @@ import ytdl from "@distube/ytdl-core";
 import fs from 'fs';
 import { sendPCMessage } from "./usePC";
 import { MusicWorkerType } from "../../type/type.versionManager";
+import { connectionEvent, playerEvent } from "./event";
 
 export class Stream extends ClientResource {
 	player: AudioPlayer;
@@ -46,6 +47,7 @@ export class Stream extends ClientResource {
 						},
 						
 					});
+					playerEvent(this.player,this.communityServer);
 				} catch (e) {
 					this.log_player_error(this.communityServer,e);
 					this.sendEmbed(this.communityServer,Common.try_catch) 
@@ -82,7 +84,7 @@ export class Stream extends ClientResource {
 				selfMute: false,
 				selfDeaf: true,
 			})
-
+			connectionEvent(this.connection,this.player,this.communityServer);
 		} catch (e) {
 			this.log_connection_error(this.communityServer, "try_catch error", e);
 			return this.sendEmbed(this.communityServer, Common.try_catch);
@@ -98,15 +100,21 @@ export class Stream extends ClientResource {
 			
 			const _stream = await ytdl(url, {
 				agent: agent,
-				filter: format => format.itag === 251,
+				filter: format =>
+				format.audioQuality == "AUDIO_QUALITY_MEDIUM" &&
+				format.hasVideo == false &&
+				format.hasAudio == true &&	
+				format.container == "mp4",
+				// quality: "highestaudio",
 				highWaterMark: 1 << 25,
 			})
-			const _resource = createAudioResource(_stream, {
-				inputType: StreamType.WebmOpus,
-			})
+			const _resource = createAudioResource(_stream,
+				{
+					inputType: StreamType.Arbitrary,
+				}
+				)
 			return _resource;
 		} catch (error) {
-			console.log(error)
 			this.missingIdLogger(
 				`no resource or library error`,
 				error,
