@@ -30,6 +30,7 @@ export interface ProcessMessage<T extends keyof typeof ProcessActionType> {
 	isSlash?: boolean,
 	data?: string,
 	processId: number,
+	targetPid?: number
 
 }
 

@@ -6,6 +6,7 @@ export enum MusicWorkerAction {
 	moveNextStream = "moveNextStream",
 	movePreStream = "movePreStream",
 	clearStream = "clearStream",
+	getPlayPlaybackDuration = "getPlayPlaybackDuration"
 }
 
 export enum ActionStatus {
@@ -19,7 +20,6 @@ export enum ActionStatus {
 
 export enum FailedReason {
 	MusicIsPlaying = "MusicIsPlaying",
-	EarlySkipping = "EarlySkipping",
 	MusicIsIdle = "MusicIsIdle",
 	FailedConnectChannel = "FailedConnectChannel",
 	FailedGetReadableStream = "FailedGetReadableStream",
@@ -29,5 +29,6 @@ export enum FailedReason {
 	UndefinedConnectionState = "UndefinedConnectionState",
 	AlreadyPaused = "AlreadyPaused",
 	AlreadyPlaying = "AlreadyPlaying",
+	EarlyAction = "EarlyAction",
 	ReadyForStream = "ReadyForStream"
 }

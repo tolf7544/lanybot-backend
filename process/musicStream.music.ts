@@ -51,13 +51,13 @@ function clearServerData(server: Guild, option: "disconnect" | "listClear") {
 	if (option == "disconnect") {
 		if (!server.members.me) return;
 		if (musicStream) {
-			if (musicStream.queue.size >= 1) clearSystemMsg('common',lang,server.id,musicStream.queue.active());
+			if (musicStream.queue.size >= 1) clearSystemMsg('common',lang,server.id);
 		}
 		server.members.me.voice.disconnect();
 		client.music.delete(server.id);
 	} else {
 		if (musicStream) {
-			if (musicStream.queue.size >= 1) clearSystemMsg('common',lang,server.id,musicStream.queue.active());
+			if (musicStream.queue.size >= 1) clearSystemMsg('common',lang,server.id);
 		}
 		client.music.delete(server.id);
 	}

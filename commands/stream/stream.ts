@@ -14,25 +14,28 @@ export class Stream extends ClientResource {
 	player: AudioPlayer;
 	connection: VoiceConnection
 	youtubeId:string;
-	constructor(input: PreviewInteraction,id:string) {
+	musicPid: number
+	constructor(input: PreviewInteraction,id:string, pid: number) {
 		super(input);
+		this.musicPid = pid
 		this.youtubeId = id;
 	}
 
 	streaming() {
-		const guildId = this.communityServer?.guild.id;
+		const guildId = this.guild?.id;
 		this.resoucre().then((readableStream) => {
 		if(readableStream == Streaming.failed_get_readable_stream_data) {
-			return sendPCMessage(MusicWorkerType.music,"executeStream", "failed", "FailedGetReadableStream", {guildId:guildId? guildId:"undefined"})
+			return sendPCMessage(MusicWorkerType.music,"executeStream", "failed", this.musicPid, "FailedGetReadableStream", {guildId:guildId? guildId:"undefined"})
 		} else {
 			try {
 				this.connection.subscribe(this.player);
 				this.player.play(readableStream);
 			} catch (error) {
-				sendPCMessage(MusicWorkerType.music,"executeStream", "failed", "FailedConnectChannel", {guildId:guildId? guildId:"undefined"})
+				console.log(error)
+				sendPCMessage(MusicWorkerType.music,"executeStream", "failed" ,this.musicPid, "FailedConnectChannel", {guildId:guildId? guildId:"undefined"})
 			}
 			
-			return sendPCMessage(MusicWorkerType.music,"executeStream", "success", undefined,{guildId:guildId? guildId:"undefined"})
+			return sendPCMessage(MusicWorkerType.music,"executeStream", "success", this.musicPid, undefined,{guildId:guildId? guildId:"undefined"})
 		}
 	})
 	}
@@ -47,7 +50,7 @@ export class Stream extends ClientResource {
 						},
 						
 					});
-					playerEvent(this.player,this.communityServer);
+					playerEvent(this.player,this.communityServer,this.musicPid);
 				} catch (e) {
 					this.log_player_error(this.communityServer,e);
 					this.sendEmbed(this.communityServer,Common.try_catch) 
@@ -84,7 +87,7 @@ export class Stream extends ClientResource {
 				selfMute: false,
 				selfDeaf: true,
 			})
-			connectionEvent(this.connection,this.player,this.communityServer);
+			connectionEvent(this.connection,this.player,this.communityServer,this.musicPid);
 		} catch (e) {
 			this.log_connection_error(this.communityServer, "try_catch error", e);
 			return this.sendEmbed(this.communityServer, Common.try_catch);
@@ -185,6 +188,7 @@ export class Stream extends ClientResource {
 			message: `discord createAudioPlayer func error occured`
 		});
 	}
+	
 	log_connection_error(guild: CommunityServer, _message: string, _error: unknown) {
 		this.logger.writeLog({
 			guildData: {

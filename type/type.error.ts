@@ -47,13 +47,18 @@ export enum Streaming {
 	failed_get_readable_stream_data = "_0407",
 	fast_skip_request = "_0408",
 	video_unavailable = "_0409",
+	stream_idle = "_0410",
+	already_pause = "_0411",
+	already_play = "_0412",
 }
 
 // 500 - 600
 export enum StreamingQueue {
 	remove_over_max = "_0501",
 	remove_over_mini = "_0502",
-	unknown_queue = "_0503"
+	unknown_queue = "_0503",
+	unknown_query = "_0504",
+	shuffle_failed = "_0505"
 }
 
 

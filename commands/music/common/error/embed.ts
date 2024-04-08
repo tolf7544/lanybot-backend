@@ -47,8 +47,8 @@ function errorEmbed(guildId:string,code:string) {
 			_0001,_0002,_0101,_0102,
 			_0201,_0202,_0203,
 			_0301,_0302,_0303,_0304,_0305,
-			_0401,_0402,_0404,_0405,_0406,_0407,_0408,_0409,
-			_0501,_0502,_0503,
+			_0401,_0402,_0404,_0405,_0406,_0407,_0408,_0409,_0410,_0411,_0412,
+			_0501,_0502,_0503,_0504,_0505,
 			_1001
 		}
 
@@ -138,6 +138,18 @@ function errorEmbed(guildId:string,code:string) {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("해당 영상은 us-west에서 재생할 수 없는 영상입니다.","다른 음악을 요청해주세요.")
 	}
+	function _0410() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("음악이 재생중에만 사용할수있어요.","")
+	}
+	function _0411() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("이미 일시정지된 음악입니다!","\"/일시정지해제\" 로 다시 재생할 수 있어요. ")
+	}
+	function _0412() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("이미 재생중인 음악입니다!","만약 음악이 나오지 않는다면 \"/초기화\"를 실행해주세요.")
+	}
 	function _0501() {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("재생목록 크기보다 더 큰 수의 스킵요청을 하셨어요.","")
@@ -149,6 +161,14 @@ function errorEmbed(guildId:string,code:string) {
 	function _0503() {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("플레이 리스트 정보가 없습니다....","대기열을 한번 초기화 후 다시 시도해주세요!")
+	}
+	function _0504() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("검색어(url)이 존재하지 않습니다.","확인 후 다시 시도해주세요!")
+	}
+	function _0505() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("셔플에 실패했어요..","시스템에 문제가 생긴것 같아요! \"/초기화\"후 다시 시도해주시기 바랍니다.")
 	}
 	function _1001() {
 		if(local == "en") return getEmbed("","")

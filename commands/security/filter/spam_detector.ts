@@ -5,6 +5,8 @@ import MessageURLFilter from "./UrlFilter"
 export default class SpamDetector {
 	private dfsps = 1.5 //detect freq spam per second
 	private dfsl = 2 // detect freq spam limit
+	private scp = 14 // spam check percentage
+
 
 	private dssps = 5 //detect sim spam per second
 	private dssl = 90// detect sim spam limit
@@ -43,7 +45,7 @@ export default class SpamDetector {
 		if(!this.single_detect_freq_spam_per_sec.has(userId)) {
 			this.single_detect_freq_spam_per_sec.set(
 				userId,
-				new MessageFreqFilter(this.dfsps,this.dfsl)
+				new MessageFreqFilter(this.dfsps,this.dfsl, this.scp)
 			)
 		}
 

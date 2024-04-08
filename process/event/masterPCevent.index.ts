@@ -43,9 +43,29 @@ if (cluster.isPrimary) {
 					return client.process.delete(pid[0][0])
 				}
 			} else if(_m.process.type == "music") {
-				const pc = client.process.get(keys?.pop() as string);
-				console.log(_m)
-				pc?.worker.send(message)
+				let _pc; 
+				if(keys) {
+					if(keys.length == 2) {
+						const pc1 = client.process.get(keys[0] as string);
+						const pc2 = client.process.get(keys[1] as string);
+						
+						const pc = [pc1,pc2].filter((pc) => {
+							return pc?.worker.process.pid == _m.targetPid 
+						})
+					
+						if(pc.length != 1) {
+							_pc = client.process.get(keys.pop() as string)
+						} else {
+							_pc = pc[0]
+						}
+					} else {
+						_pc = client.process.get(keys[0] as string);
+					}
+
+				}
+				if(_pc?.worker.isConnected()) {
+					_pc?.worker.send(message)
+				}
 			}
 
 		}

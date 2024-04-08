@@ -39,7 +39,8 @@ export function checkPlaylistAddRow(guild: CommunityServer) {
 					name: 'plus',
 					id: '1117124913204035604',
 				},
-			}),
+			})
+		)		.addComponents(
 			new ButtonBuilder({
 				custom_id: 'exit',
 				style: ButtonStyle.Success,
@@ -48,7 +49,9 @@ export function checkPlaylistAddRow(guild: CommunityServer) {
 					name: 'delete',
 					id: '1119863749025730632',
 				},
-			}));
+			})
+		);
+
 
 	return { row }
 

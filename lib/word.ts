@@ -299,4 +299,13 @@ export class Lang {
 		if (this.local == 'en') return "The command cannot be executed as this music is the first in the queue."
 		else return "해당 음악이 대기열의 첫번째 음악이므로 명령어를 실행할수없습니다."
 	}
+
+	showStream_des(time1:string,time2:string) {
+		if (this.local == 'en') return `${time2} out of ${time1} has been played.`
+		else return `${time1} 중 ${time2} 재생되었습니다.`
+	}
+	get showStream_title() {
+		if (this.local == 'en') return "playing music"
+		else return "재생중인 음악"
+	}
 }/*******************************************************************************************/

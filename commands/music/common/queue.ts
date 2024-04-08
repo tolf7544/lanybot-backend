@@ -23,16 +23,22 @@ export class Queue extends Map<number, Metadata> {
 		isClear: boolean
 		isPreviousStream: boolean
 		isPause: boolean
+		isNextStream: boolean
 	} = {
 		isSkip: false,
 		isClear:false,
 		isPreviousStream: false,
-		isPause: false
+		isPause: false,
+		isNextStream: false
 	}
-	constructor(input: ChatInputCommandInteraction) {
-		super();
-
+	constructor(input: ChatInputCommandInteraction,entries?: IterableIterator<[number, Metadata]>) {
+		super(entries? entries: null);
 		this.communityServer = useGuild(input);
+		if(!entries) return;
+		
+		
+
+		
 	}
 
 	get mapId() {
@@ -85,8 +91,8 @@ export class Queue extends Map<number, Metadata> {
 
 
 	active() {
-		const _key = Array.from(this.keys()).filter((_v) => { return _v == this.activeId})
-		const temp = this.get(_key[0])
+		const _key = Array.from(this.keys())[this.activePosition()]
+		const temp = this.get(_key)
 
 		return temp;
 	}
@@ -100,29 +106,26 @@ export class Queue extends Map<number, Metadata> {
 	}
 
 	next() {
+		let key = 0;
+
 		if(this.loop == "single") {
 			/** pass */
+			key = Array.from(this.keys())[this.activePosition()]
 		} else if(this.loop == "all") {
-			if(this.activePosition()+1 == this.size) {
-				this.activeId = Array.from(this.keys()).shift() as number;
+			if(this.activePosition()+1 >= this.size) {
+				this.activeId = Array.from(this.keys())[0] as number;
+				key = Array.from(this.keys())[this.activePosition()]
+			} else {
+				key = Array.from(this.keys())[this.activePosition() + 1]
 			}
+		} else {
+			key = Array.from(this.keys())[this.activePosition() + 1]
 		}
-
-		const _key = Array.from(this.keys())[this.activePosition() + 1]
-		this.activeId = _key;
-		const temp = this.get(_key)
+		this.activeId = key;
+		const temp = this.get(key)
 
 		return temp;
 	}
-
-	previous() {
-		this.activeId -= 1
-		const _key = Array.from(this.keys())[this.activeId]
-		const temp = this.get(_key)
-
-		return temp;
-	}
-
 	add(query: string, isNext: boolean, server: CommunityServer, callback: CallableFunction): void {
 			this.search_query(query, server).then((ids) => {
 				debugging(JSON.stringify({
@@ -141,11 +144,12 @@ export class Queue extends Map<number, Metadata> {
 								sendEmbed(server, result)
 							} else {
 								if (isNext == true) {
-
-									Array.from(this.entries()).filter((v) => { return v[0] > this.activeId }).forEach((_e) => {
-										this.set(_e[0] + 1, _e[1])
+									const keys = Array.from(this.keys())
+									Array.from(this.entries()).filter((v) => { return keys.indexOf(v[0]) > this.activePosition() }).forEach((_e) => {
+										const nextPos = keys.indexOf(_e[0])
+										this.set(keys[nextPos + 1], _e[1])
 									})
-									this.set(this.activeId + 1, music)
+									this.set(keys[this.activePosition()+1], music)
 								} else {
 									this.set(this.mapId, music)
 								}
@@ -157,12 +161,15 @@ export class Queue extends Map<number, Metadata> {
 									const music = new Metadata(video[0])
 									music.MusicData.title = video[1]
 									music.MusicData.time = video[2]
+									let temp = 0
 									if (isNext == true) {
-										const temp = this.get(Array.from(this.keys())[this.size - 1]) as Metadata
-										Array.from(this.entries()).forEach((_e) => {
-											this.set(_e[0] + 1, _e[1])
+										const keys = Array.from(this.keys())
+										Array.from(this.entries()).filter((v) => { return keys.indexOf(v[0]) > this.activePosition() + temp }).forEach((_e) => {
+											const nextPos = keys.indexOf(_e[0])
+											this.set(keys[nextPos + 1], _e[1])
 										})
-										this.set(this.mapId, temp)
+										temp += 1;
+										this.set(keys[this.activePosition()+1], music)
 									} else {
 										this.set(this.mapId, music)
 									}
@@ -178,6 +185,7 @@ export class Queue extends Map<number, Metadata> {
 						 * 
 						 * 재생 목록 존재 x
 						 */
+						sendEmbed(server,StreamingQueue.unknown_query)
 					}
 				}
 			}).catch((reason: string) => {
@@ -199,14 +207,12 @@ export class Queue extends Map<number, Metadata> {
 		if (!this.communityServer) {
 			return reject(DiscordClient.failed_get_client)
 		}
-
-		if (id) {
+		if (id || pl_id) {
 			/** id 기반 재생 */
 			if (pl_id) {
-				getPlaylist(pl_id[0]).catch((res) => {
+				getPlaylist(pl_id[0].replace("?list=","")).catch((res) => {
 					this.logger.writeLog(res[0]);
 				}).then((playlist) => {
-
 				if (playlist == undefined) {
 					return reject(YTCrawler.playlist_is_undefined)
 				}
@@ -221,18 +227,19 @@ export class Queue extends Map<number, Metadata> {
 					if(typeof result == "object") {
 						if (result.data == true) ids = ids.concat(playlist);
 						else ids.push(playlist[0])
+						return resolve(ids);
 					} else {
 						return reject(null);
 					}
 				})
 				})
+			} else {
+				if (id && typeof id == 'string') {
+					ids.unshift([id, "undefined", "undefined"])
+				}
+	
+				resolve(ids);
 			}
-
-			if (id && typeof id == 'string') {
-				ids.unshift([id, "undefined", "undefined"])
-			}
-
-			resolve(ids);
 		} else {
 			/** 검색 필요 */
 			search(this.communityServer,query).then((result) => {

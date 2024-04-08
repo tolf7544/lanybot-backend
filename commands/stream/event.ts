@@ -3,24 +3,23 @@ import { MusicWorkerType } from "../../type/type.versionManager";
 import { sendPCMessage } from "./usePC";
 import { CommunityServer } from "../../type/type.common";
 
-export function playerEvent(player: AudioPlayer, server: CommunityServer | undefined) {
+export function playerEvent(player: AudioPlayer, server: CommunityServer, pid:number) {
 	player.on("stateChange", (oldState: { status: string; }, newState: { status: string; }) => {
-		if (oldState.status === 'playing' && newState.status === 'idle') {
-			sendPCMessage(MusicWorkerType.music, "executeStream", "finished", undefined, { guildId: server?.guild.id as string })
+		if (oldState.status == 'playing' || oldState.status == 'paused' || oldState.status == 'autopaused' && newState.status === 'idle') {
+			console.log("music finished")
+			sendPCMessage(MusicWorkerType.music, "executeStream", "finished",pid, undefined, { guildId: server?.guild.id as string })
 		}
 	})
-
 	player.on('error', (e: AudioPlayerError) => {
-		console.log(e)
 		if (e.toString() == "Error: Video unavailable") {
-			sendPCMessage(MusicWorkerType.music, "executeStream", "failed", "VideoUnavailable", { guildId: server?.guild.id as string })
+			sendPCMessage(MusicWorkerType.music, "executeStream", "failed",pid, "VideoUnavailable", { guildId: server.guild.id})
 		} else {
-			sendPCMessage(MusicWorkerType.music, "executeStream", "failed", "FailedPlayStream", { guildId: server?.guild.id as string })
+			sendPCMessage(MusicWorkerType.music, "executeStream", "failed",pid, "FailedPlayStream", { guildId: server.guild.id})
 		}
 	})
 }
 
-export function connectionEvent(connection: VoiceConnection, player: AudioPlayer, server: CommunityServer | undefined) {
+export function connectionEvent(connection: VoiceConnection, player: AudioPlayer, server: CommunityServer,pid: number) {
 	connection.on(VoiceConnectionStatus.Disconnected, async () => {
 		try {
 			await Promise.race([
@@ -30,7 +29,7 @@ export function connectionEvent(connection: VoiceConnection, player: AudioPlayer
 			// Seems to be reconnecting to a new channel - ignore disconnect
 		} catch (error) {
 			/** finish music */
-			sendPCMessage(MusicWorkerType.music, "executeStream", "failed", "FailedConnectChannel", { guildId: server?.guild.id as string })
+			sendPCMessage(MusicWorkerType.music, "executeStream", "failed",pid, "FailedConnectChannel", { guildId: server.guild.id})
 			try {
 				player.stop();
 			} catch (e) { /** empty */ }

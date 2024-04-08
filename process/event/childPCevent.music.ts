@@ -2,7 +2,7 @@ import cluster from "cluster";
 import { client, debugging, ROLE } from "../..";
 import { ProcessMessage, WorkerAction } from "../../type/type.versionManager";
 import { MusicWorkerAction } from "../../type/type.stream";
-import { receiveIPCskipStream, receiveIPexecuteStream } from "../../commands/music/common/useStreamPC";
+import { receiveIPCnextStream, receiveIPCpreStream, receiveIPCskipStream, receiveIPexecuteStream, receivePlaybackDurationData } from "../../commands/music/common/useStreamPC";
 
 
 export function childPCevent_music() {
@@ -56,7 +56,6 @@ export function childPCevent_music() {
 					if (_m.collection) {
 						client.previous_version_guilds = new Set(JSON.parse(_m.collection))
 
-						console.log(client.previous_version_guilds)
 					}
 				}
 			} else if (_m.process.type == "music") {
@@ -64,6 +63,12 @@ export function childPCevent_music() {
 					return receiveIPexecuteStream(_m as ProcessMessage<"music">);
 				} else if(_m.process.music.action == MusicWorkerAction.skipStream) {
 					return receiveIPCskipStream(_m as ProcessMessage<"music">)
+				} else if(_m.process.music.action == MusicWorkerAction.movePreStream) {
+					return receiveIPCpreStream(_m as ProcessMessage<"music">)
+				} else if(_m.process.music.action == MusicWorkerAction.moveNextStream) {
+					return receiveIPCnextStream(_m as ProcessMessage<"music">)
+				} else if(_m.process.music.action == MusicWorkerAction.getPlayPlaybackDuration) {
+					return receivePlaybackDurationData(_m as ProcessMessage<"music">)
 				}
 			}
 		}))

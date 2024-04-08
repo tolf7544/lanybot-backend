@@ -66,11 +66,16 @@ export class Pageination {
 	get activePage() {
 		const _activePage = this.cRow[this.cPageInfo.activePage-1];
 		const temp = [];
-		for(const _row of _activePage) {
-			if(_row != undefined) {
-				temp.push(_row)
+		if(!_activePage) {
+			return [{name: "None", value: "None"}]
+		} else {
+			for(const _row of _activePage) {
+				if(_row != undefined) {
+					temp.push(_row)
+				}
 			}
 		}
+
 		return temp
 	}
 

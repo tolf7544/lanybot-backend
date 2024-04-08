@@ -46,8 +46,11 @@ export class serverLogger {
     writeLog(LogData: LogFormat) {
         this.MkSystemLogDir().then((DateDir) => {
             const date = new Date();
-            LogData.date = date.toUTCString();
-            this.MkSystemLogJsonFile(DateDir, LogData);
+            const temp = {
+                ...LogData,
+                data: date.toUTCString()
+            }
+            this.MkSystemLogJsonFile(DateDir, temp);
             return true;
         });
     }

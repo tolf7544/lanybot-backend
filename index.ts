@@ -20,12 +20,13 @@ import musicStream from './process/musicStream.stream';
 import { childPCevent_music } from './process/event/childPCevent.music';
 import { childPCevent_stream } from './process/event/childPCevent.stream';
 import { Stream } from './commands/stream/stream';
+import { childPCevent_security } from './process/event/childPCevent.security';
 declare module "discord.js" {
 	export interface Client {
 		commands: Collection<unknown, unknown>
 		cooldowns: Collection<unknown, unknown>
 		version: Collection<string, string>
-		streamQueue: Collection<string,Stream>
+		streamQueue: Map<string,Stream>
 		spam: Collection<string, SpamDetector>
 		previous_version_guilds:Set<string>
 		music: Collection<string,Music>
@@ -49,7 +50,7 @@ export const client: Client = new Client({
 
 export const ROLE: Array<string|boolean> = [];
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-client.previous_version_guilds = new Set();
+client.previous_version_guilds = new Set("loading");
 client.lang = new Collection(); 
 client.login(token);
 
@@ -81,6 +82,7 @@ if (cluster.isPrimary) {
 						break;
 					case "security":
 						spam()
+						childPCevent_security()
 						break;
 					case "stream":
 						childPCevent_stream();
@@ -144,6 +146,14 @@ export const messageReact = () => {
 export const InteractionReact = () => {
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (!interaction.isCommand()) return;
+		
+		if(client.previous_version_guilds.has("loading")) {
+			if(interaction.isRepliable()) {
+				interaction.reply("현재 서버를 업데이트하는 중 입니다..!\n잠시만 기다려 주세요!")
+			}
+			
+		}
+
 		if(client.previous_version_guilds.has(interaction.guildId as string )) {
 			debugging(JSON.stringify({
 				"message":"previos user passing",

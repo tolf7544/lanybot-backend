@@ -1,7 +1,7 @@
 import cluster from "cluster";
 import { client, debugging, ROLE } from "../..";
 import { ProcessMessage, WorkerAction } from "../../type/type.versionManager";
-import { clearStream, executeStream, pauseStream, skipStream, unpauseStream } from "../../commands/stream/musicStream";
+import { clearStream, executeStream, getPlaybackDuration, moveNextStream, movePreStream, pauseStream, skipStream, unpauseStream } from "../../commands/stream/musicStream";
 import { MusicWorkerAction } from "../../type/type.stream";
 
 
@@ -30,6 +30,27 @@ export function childPCevent_stream() {
 									} as ProcessMessage<"worker">))
 								}
 							} else {
+								Array.from(client.streamQueue.entries()).forEach((entry) => {
+									if(entry[1].communityServer == undefined) {
+										client.streamQueue.delete(entry[0])
+									}
+
+									if(entry[1].player) {
+										if(entry[1].player?.state) {
+											// pass
+										} else {
+											client.streamQueue.delete(entry[0])
+										}
+									}
+									if(entry[1].connection) {
+										if(entry[1].connection?.state) {
+											// pass
+										} else {
+											client.streamQueue.delete(entry[0])
+										}
+									}
+								})
+
 								return process.send(JSON.stringify({
 									process: {
 										type: "worker",
@@ -54,14 +75,13 @@ export function childPCevent_stream() {
 						if (_m.collection) {
 							client.previous_version_guilds = new Set(JSON.parse(_m.collection))
 
-							console.log(client.previous_version_guilds)
 						}
 					}
 				}
 			} else {
 				if (_m.process.type == "music") {
 					if (_m.process.music.action == MusicWorkerAction.executeStream) {
-						return executeStream(_m.data);
+						return executeStream(_m.data,_m.processId);
 					} else if(_m.process.music.action == MusicWorkerAction.skipStream) {
 						return skipStream(_m.data);
 					} else if(_m.process.music.action == MusicWorkerAction.clearStream) {
@@ -70,6 +90,12 @@ export function childPCevent_stream() {
 						return pauseStream(_m.data);
 					} else if(_m.process.music.action == MusicWorkerAction.resumeStream) {
 						return unpauseStream(_m.data);
+					} else if(_m.process.music.action == MusicWorkerAction.movePreStream) {
+						return movePreStream(_m.data);
+					} else if(_m.process.music.action == MusicWorkerAction.moveNextStream) {
+						return moveNextStream(_m.data);
+					} else if(_m.process.music.action == MusicWorkerAction.getPlayPlaybackDuration) {
+						return getPlaybackDuration(_m.data);
 					}
 				}
 			}

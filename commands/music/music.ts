@@ -71,24 +71,49 @@ export = {
 				.setDescriptionLocalization("ko", "현재 재생목록을 초기화하고 연결을 해제해요.")
 		})
 		.addSubcommand((input) => {
-			return input.setName('loop_single')
-				.setDescription('loop single')
-				.setNameLocalization("ko", "반복재생_하나")
-				.setDescriptionLocalization("ko", "재생중인 음악 한곡를 반복재생해요.")
+			return input.setName('shuffle')
+				.setDescription('Randomize the order of playlists.')
+				.setNameLocalization("ko", "셔플")
+				.setDescriptionLocalization("ko", "재생목록의 순서를 랜덤으로 바꿔요.")
+		})
+        .addSubcommand((input) => {
+			return input.setName('loop')
+				.setDescription('loop setting')
+				.setNameLocalization("ko", "반복재생")
+				.setDescriptionLocalization("ko", "반복재생을 설정해요 [하나, 모두, 종료]")
+				.addStringOption((option) => {
+				return option.setName("option")
+					.setNameLocalization("ko", "선택")
+					.setDescription("option: [single, all, finish]")
+					.setDescriptionLocalization("ko", "선택: [하나, 모두, 종료]")
+					.addChoices({ name: "single", name_localizations: { ko: "하나" }, value: "single" }, { name: "all", name_localizations: { ko: "모두" }, value: "all" }, { name: "finish", name_localizations: { ko: "종료" }, value: "false" })
+					.setRequired(true);
+			});
 		})
 		.addSubcommand((input) => {
-			return input.setName('loop_all')
-				.setDescription('loop all')
-				.setNameLocalization("ko", "반복재생_모두")
-				.setDescriptionLocalization("ko", "일시정지된 음악을 다시 재생해요.")
+			return input.setName('move')
+				.setDescription('Set it to play the previous or next track.')
+				.setNameLocalization("ko", "움직이기")
+				.setDescriptionLocalization("ko", "이전 음악 또는 다음 음악을 재생하도록 설정해요.")
+				.addStringOption((option) => {
+					return option.setName("option")
+						.setNameLocalization("ko", "선택")
+						.setDescription("option: [previous, next]")
+						.setDescriptionLocalization("ko", "선택: [이전 음악, 다음 음악]")
+						.addChoices(
+						{ name: "previous music", name_localizations: { ko: "이전 음악" }, value: "previos" },
+						{ name: "next music", name_localizations: { ko: "다음 음악" }, value: "next" },
+						)
+						.setRequired(true);
+				});
 		})
 		.addSubcommand((input) => {
-			return input.setName('loop_exit')
-				.setDescription('loop exit')
-				.setNameLocalization("ko", "반복재생_종료")
-				.setDescriptionLocalization("ko", "반복재생을 종료해요.")
-		})
-	,
+			return input.setName('information')
+				.setDescription('show streaming music information')
+				.setNameLocalization("ko", "정보")
+				.setDescriptionLocalization("ko", "현재 재생중인 음악 정보를 알려드려요.")
+		}),
+		
 	async execute(interaction: ChatInputCommandInteraction<CacheType>) {
 		await interaction.deferReply({ ephemeral: false })
 		const SubCommand = interaction.options.getSubcommand();
@@ -113,14 +138,17 @@ export = {
 			case "clear":
 				music_clear(interaction)
 				break;
-			case "loop_single":
-				music_loop("single",interaction)
+			case "loop":
+				music_loop(interaction)
 				break;
-			case "loop_all":
-				music_loop("all",interaction)
+			case "move":
+				music_move(interaction)
 				break;
-			case "loop_exit":
-				music_loop("false",interaction)
+			case "information":
+				music_info(interaction)
+				break;
+			case "shuffle":
+				music_shuffle(interaction)
 				break;
 		}
 	},
@@ -203,13 +231,54 @@ async function music_clear(interaction: ChatInputCommandInteraction<CacheType>) 
 	}
 }
 
-async function music_loop(loopState: Queue["loop"],interaction: ChatInputCommandInteraction<CacheType>) {
+async function music_loop(interaction: ChatInputCommandInteraction<CacheType>) {
+	const input = interaction.options.getString("option") as Queue["loop"]
+	const guildId = interaction.guildId
+	if (guildId) {
+		const music = useMusic(guildId, interaction)
+		if (!music || !input) return;
+
+	
+		music.update_user(interaction);
+		await music.loop(input)
+	}
+}
+
+async function music_move(interaction: ChatInputCommandInteraction<CacheType>) {
+	const input = interaction.options.getString("option")
+	const guildId = interaction.guildId
+	if (guildId) {
+		const music = useMusic(guildId, interaction)
+		if (!music || !input) return;
+
+	
+		music.update_user(interaction);
+		
+		if(input == "previos") {
+			music.previousPlay()
+		} else {
+			music.nextPlay()
+		}
+	}
+}
+
+async function music_info(interaction: ChatInputCommandInteraction<CacheType>) {
 	const guildId = interaction.guildId
 	if (guildId) {
 		const music = useMusic(guildId, interaction)
 		if (!music) return;
 
 		music.update_user(interaction);
-		await music.loop(loopState)
+		await music.info()
+	}
+}
+async function music_shuffle(interaction: ChatInputCommandInteraction<CacheType>) {
+	const guildId = interaction.guildId
+	if (guildId) {
+		const music = useMusic(guildId, interaction)
+		if (!music) return;
+
+		music.update_user(interaction);
+		await music.shuffleQueue()
 	}
 }

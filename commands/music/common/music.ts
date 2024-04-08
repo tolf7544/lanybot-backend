@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 
 import { ClientResource } from "./client";
 import { Database } from "./database";
@@ -17,7 +18,7 @@ import { MusicWorkerType } from "../../../type/type.versionManager";
 import { Pageination } from "../../../lib/pageInation";
 import { setTime } from "./yt_video/getMusicData";
 import { interaction_reply } from "../../../lib/sendMessage";
-import { addEmbed, clearSystemMsg, endEmbed, playEmbed, skipEmbed } from "./embed";
+import { addEmbed, clearSystemMsg, endEmbed, loopEmbed, nextSteamEmbed2, playEmbed, preStreamEmbed2, shuffleEmbed, skipEmbed } from "./embed";
 
 export function useMusic(guildId:string,i?:ChatInputCommandInteraction) {
 	if(client.music.has(guildId)) {
@@ -38,7 +39,7 @@ export function useMusic(guildId:string,i?:ChatInputCommandInteraction) {
 export class Music extends ClientResource {
 	queue: Queue
 	database: Database
-
+	streamingPid: number = 0
 	player: AudioPlayer
 	connection: VoiceConnection
 	IsAction: boolean;
@@ -77,10 +78,15 @@ export class Music extends ClientResource {
 	}
 	
 	play(query: string, isNext: boolean) {
+		let isFirst = false
+		
 		this.checkUserPlayState().then(() => {
 			this.useServer().then(async (server) => {
+				if(this.queue.size == 0) {
+					isFirst = true;
+				}
 				this.queue.add(query, isNext, server, ((metadata: Metadata) => {
-					if (this.queue.size > 1) {
+					if (isFirst == false) {
 						addEmbed(
 							metadata as Metadata,
 							this.communityServer as CommunityServer,
@@ -100,12 +106,14 @@ export class Music extends ClientResource {
 			metadata = metadata as Metadata;
 			if (metadata?.MusicData) {
 				metadata.setMusic(this.communityServer as CommunityServer).then(() => {
-					playEmbed(
-						metadata as Metadata,
-						server,
-						this.lang,
-						this.queue.size
-						)
+					if(this.queue.loop == "false") {
+						playEmbed(
+							metadata as Metadata,
+							server,
+							this.lang,
+							this.queue.size - (this.queue.activePosition() + 1)
+							)
+					}
 				});
 			} else {
 				return this.sendEmbed(this.communityServer,StreamingQueue.unknown_queue)
@@ -127,37 +135,78 @@ export class Music extends ClientResource {
 			let metadata: string | Metadata | undefined
 			if (!skipNumber) {
 				//this.queue.activeId
-				metadata = this.queue.remove();
+				sendStreamPCMessage(MusicWorkerType.stream, "skipStream", {
+					youtubeId: "undefined",
+					guildId: this.guild?.id as string,
+					memberId: this.member?.id as string,
+					channelId: this.channel?.id as string
+				})
+				this.queue.action.isSkip = true;
 
 			} else {
 				//skipNumber
 				metadata = this.queue.remove(skipNumber);
+				if (typeof metadata != "string" && metadata && this.communityServer) {
+					clearSystemMsg("common",this.lang,this.communityServer?.guild.id)
+
+						skipEmbed(metadata, this.communityServer)
+				}
 			}
 			
 			if (typeof metadata == "string") {
 				this.sendEmbed(this.communityServer, metadata)
-			} else if (metadata && this.communityServer) {
-				clearSystemMsg("common",this.lang,this.communityServer?.guild.id,metadata)
-				skipEmbed(metadata, this.communityServer)
-			}
+			} 
 		})
-		this.queue.action.isSkip = true;
-		sendStreamPCMessage(MusicWorkerType.stream, "skipStream", {
-			youtubeId: "undefined",
-			guildId: this.guild?.id as string,
-			memberId: this.member?.id as string,
-			channelId: this.channel?.id as string
-		})
+
 	}
 
 	loop(loopState: Queue["loop"]) {
-		this.queue.loop = loopState;
+		this.checkUserControlQueueState().then(() => {
+			this.useServer().then((server) => {
+				this.queue.loop = loopState;
+	
+				loopEmbed(server,loopState,this.queue.active())
+			})
+		})
+	}
 
-		/**
-		 * 
-		 * embed 작성
-		 * 
-		 */
+	info() {
+		this.checkUserViewQueueState().then(() => {
+			sendStreamPCMessage(MusicWorkerType.stream, "getPlayPlaybackDuration", {
+				youtubeId: "undefined",
+				guildId: this.guild?.id as string,
+				memberId: this.member?.id as string,
+				channelId: this.channel?.id as string
+			});
+		})
+	}
+
+	shuffleQueue() {
+		this.checkUserControlQueueState().then(() => {
+			const activeValue = this.queue.active() 
+			const activeKey = Array.from(this.queue.keys())[this.queue.activePosition()];
+			if(activeValue && this.communityServer) {
+			
+			let _q = Array.from(this.queue.entries());
+			_q.shift();
+			for (let i = _q.length - 1; i > 0; i--) {
+	
+				// Generate random number 
+				const j = Math.floor(Math.random() * (i + 1));
+	
+				const temp = _q[i];
+				_q[i] = _q[j];
+				_q[j] = temp;
+			}
+	
+			_q.unshift([activeKey,activeValue]);
+			this.queue = new Queue(this.communityServer.interaction as ChatInputCommandInteraction<CacheType>,_q[Symbol.iterator]())
+			this.queue.activeId = [...this.queue][0][0];
+			shuffleEmbed(this.communityServer,this.queue)
+			} else {
+				this.sendEmbed(this.communityServer, StreamingQueue.shuffle_failed)
+			}
+		})
 	}
 
 	showQueue() {
@@ -165,9 +214,16 @@ export class Music extends ClientResource {
 			const rowData = []
 
 			for(const row of Array.from(this.queue.entries())) {
+				let temp;
+				const time = row[1].MusicData.timeS? setTime(row[1].MusicData.timeS,this.communityServer as CommunityServer) : null
+				if(time == null) {
+					temp = row[1].MusicData.time;
+				} else {
+					temp = time;
+				}
 				rowData.push({
 						name: (rowData.length+1)+"." + row[1].MusicData.title,
-						value: `${setTime(row[1].MusicData.timeS,this.communityServer as CommunityServer)} [youtube link](https://www.youtube.com/watch?v=${row[1].id})`
+						value: `${temp} [youtube link](https://www.youtube.com/watch?v=${row[1].id})`
 					})
 			}
 			const page = new Pageination(rowData, 8);
@@ -183,7 +239,7 @@ export class Music extends ClientResource {
 			if(page.cPageInfo.isSinglePage == true) {
 				interaction_reply(this.communityServer?.interaction,[],this.showQueueEmbed(page))
 			} else {
-				const message = interaction_reply(this.communityServer?.interaction,[this.controlComponents(false,true,false)],this.showQueueEmbed(page))
+				const message = interaction_reply(this.communityServer?.interaction,[this.controlComponents(false,true,true)],this.showQueueEmbed(page))
 				if(message) {
 					message.then((_message) => {
 						if(!_message) return;
@@ -195,11 +251,13 @@ export class Music extends ClientResource {
 						})
 					
 						collector.on('collect', (i: StringSelectMenuInteraction<CacheType>) => {
+							i.deferUpdate();
 							if(i.customId == "music_list_previous_page") {
 								page.previousPage();
 								
 								const _embed =this.showQueueEmbed(page)
-								if (page.cPageInfo.activePage == page.cPageInfo.pageCount) {
+								if (page.cPageInfo.activePage == 1) {
+									
 									interaction_reply(this.communityServer?.interaction,[this.controlComponents(false,true,true)],_embed)
 								} else {
 									interaction_reply(this.communityServer?.interaction, [this.controlComponents(true,true,true)],_embed)
@@ -231,12 +289,14 @@ export class Music extends ClientResource {
 	pause() {
 		this.checkUserControlQueueState().then(() => {
 			if(this.queue.action.isPause == true) {
+				this.sendEmbed(this.communityServer,Streaming.already_pause)
 				/**
 				 * 
 				 * 이미 pause가 적용됨 안내 메시지 보내기
 				 * 
 				 */
 			} else {
+				this.queue.action.isPause = true
 				sendStreamPCMessage(MusicWorkerType.stream, "pauseStream", {
 					youtubeId: "undefined",
 					guildId: this.guild?.id as string,
@@ -250,12 +310,14 @@ export class Music extends ClientResource {
 	resume() {
 		this.checkUserControlQueueState().then(() => {
 			if(this.queue.action.isPause == false) {
+				this.sendEmbed(this.communityServer,Streaming.already_play)
 				/**
 				 * 
 				 * 이미 pause가 적용됨 안내 메시지 보내기
 				 * 
 				 */
 			} else {
+				this.queue.action.isPause = false
 				sendStreamPCMessage(MusicWorkerType.stream, "resumeStream", {
 					youtubeId: "undefined",
 					guildId: this.guild?.id as string,
@@ -266,10 +328,57 @@ export class Music extends ClientResource {
 		})
 	}
 
+	previousPlay() {
+		this.checkUserPlayState().then(() => {
+			this.useServer().then(async (server) => {
+			if(this.queue.activePosition() == 0) {
+				preStreamEmbed2(server);
+				/**
+				 * 
+				 * 대기열의 첫번째 음악이므로 해당 명령어를 사용할 수 없어요.
+				 * 
+				 */
+			} else {
+				this.queue.action.isPreviousStream = true;
+
+				sendStreamPCMessage(MusicWorkerType.stream, "movePreStream", {
+					youtubeId: "undefined",
+					guildId: this.guild?.id as string,
+					memberId: this.member?.id as string,
+					channelId: this.channel?.id as string
+				})
+			}
+		})
+		})
+	}
+	nextPlay() {
+		this.checkUserPlayState().then(() => {
+			this.useServer().then(async (server) => {
+			if(this.queue.activePosition() == this.queue.size - 1) {
+				nextSteamEmbed2(server);
+				/**
+				 * 
+				 * 대기열의 첫번째 음악이므로 해당 명령어를 사용할 수 없어요.
+				 * 
+				 */
+			} else {
+				this.queue.action.isNextStream = true;
+
+				sendStreamPCMessage(MusicWorkerType.stream, "moveNextStream", {
+					youtubeId: "undefined",
+					guildId: this.guild?.id as string,
+					memberId: this.member?.id as string,
+					channelId: this.channel?.id as string
+				})
+			}
+		})
+		})
+	}
+
 	clear() {
 		this.checkUserControlQueueState().then(() => {
 			this.queue.action.isClear = true;
-
+		
 			sendStreamPCMessage(MusicWorkerType.stream, "clearStream", {
 				youtubeId: "undefined",
 				guildId: this.guild?.id as string,
@@ -341,14 +450,13 @@ export class Music extends ClientResource {
 	private checkQueueSize(run: CallableFunction) {
 		if(this.queue.size == 0 || !this.queue.active()) {
 			if(this.communityServer) {
+				this.queue.action.isClear = true;
 				sendStreamPCMessage(MusicWorkerType.stream,"clearStream",{
 					guildId: this.communityServer.guild.id,
 					youtubeId: "undefined",
 					memberId: "undefined",
 					channelId: "undefined"
 				})
-				this.queue.clear();
-				this.queue.activeId = 0
 				endEmbed(this.communityServer)
 			}
 		} else {
@@ -375,11 +483,7 @@ export class Music extends ClientResource {
 			}
 
 			this.checkClientUserPermission().then(() => {
-				if(this.connection|| this.player) {
 				resolve();
-				} else {
-					resolve();
-				}
 			})
 		})
 	}
