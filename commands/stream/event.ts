@@ -5,7 +5,7 @@ import { CommunityServer } from "../../type/type.common";
 
 export function playerEvent(player: AudioPlayer, server: CommunityServer, pid:number) {
 	player.on("stateChange", (oldState: { status: string; }, newState: { status: string; }) => {
-		if (oldState.status == 'playing' || oldState.status == 'paused' || oldState.status == 'autopaused' && newState.status === 'idle') {
+		if ((oldState.status == 'playing' || oldState.status == 'paused' || oldState.status == 'autopaused' ) && newState.status === 'idle') {
 			console.log("music finished")
 			sendPCMessage(MusicWorkerType.music, "executeStream", "finished",pid, undefined, { guildId: server?.guild.id as string })
 		}
@@ -20,6 +20,16 @@ export function playerEvent(player: AudioPlayer, server: CommunityServer, pid:nu
 }
 
 export function connectionEvent(connection: VoiceConnection, player: AudioPlayer, server: CommunityServer,pid: number) {
+
+	connection.on("stateChange", (oldState, newState) => {
+        if (
+            oldState.status === VoiceConnectionStatus.Ready &&
+            newState.status === VoiceConnectionStatus.Connecting
+        ) {
+            connection.configureNetworking();
+        }
+      });
+	
 	connection.on(VoiceConnectionStatus.Disconnected, async () => {
 		try {
 			await Promise.race([

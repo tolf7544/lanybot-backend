@@ -47,9 +47,8 @@ export class Stream extends ClientResource {
 				this.player = createAudioPlayer({
 						behaviors: {
 							noSubscriber: NoSubscriberBehavior.Pause,
-						},
-						
-					});
+						}
+					})
 					playerEvent(this.player,this.communityServer,this.musicPid);
 				} catch (e) {
 					this.log_player_error(this.communityServer,e);

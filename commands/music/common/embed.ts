@@ -138,7 +138,7 @@ export function clearEmbed(server: CommunityServer) {
 	const embed = new EmbedBuilder()
 		.setAuthor({ iconURL: `${icon.play}`, name: `${lang.clear_queue_title}` })
 		.setColor(`Green`)
-		interaction_reply(server.interaction, [], embed)
+	interaction_reply(server.interaction, [], embed)
 }
 
 export function loopEmbed(server: CommunityServer, input: string, metadata: Metadata | undefined) {
@@ -169,20 +169,20 @@ export function loopEmbed(server: CommunityServer, input: string, metadata: Meta
 	send_message({ input: server, embed: [embed] }).catch(() => { /** empty */ });
 }
 
-export async function showStream(server:CommunityServer,playingMusic:Metadata, playbackDuration: number) {
+export async function showStream(server: CommunityServer, playingMusic: Metadata, playbackDuration: number) {
 	const lang = new Lang(server.guild.id);
 	const currentTime = playbackDuration;
-	const activeTimeStamp = setTime(currentTime / 1000,server);
+	const activeTimeStamp = setTime(currentTime / 1000, server);
 	const maxTimeStamp = playingMusic.MusicData.time;
-	const DESTimeStamp = lang.showStream_des(maxTimeStamp,activeTimeStamp)
+	const DESTimeStamp = lang.showStream_des(maxTimeStamp, activeTimeStamp)
 	const title = playingMusic.MusicData.title
 	const Thumbnail = playingMusic.MusicData.thumbnail;
 	const _embed = new EmbedBuilder()
-	.setAuthor({name:lang.showStream_title,iconURL: icon.eq})
-	.setTitle(title)
-	.setDescription(DESTimeStamp)
-	.setThumbnail(Thumbnail)
-	await interaction_reply(server.interaction,[],_embed)
+		.setAuthor({ name: lang.showStream_title, iconURL: icon.eq })
+		.setTitle(title)
+		.setDescription(DESTimeStamp)
+		.setThumbnail(Thumbnail)
+	await interaction_reply(server.interaction, [], _embed)
 }
 
 export function playEmbed(stream: Metadata, server: CommunityServer, lang: Lang, queueSize: number) {
@@ -230,26 +230,18 @@ export function playEmbed(stream: Metadata, server: CommunityServer, lang: Lang,
 
 				_component.push(selectQueue);
 			} else {
-				return interaction_reply(server.interaction, [], embed)
+				deleteInteraction(server)
+				send_message({ input: server, component: _component, embed: [embed] })
 			}
 		} else if (stream.RecommendVideos == "ADULT") {
 			return sendEmbed(server, Streaming.adult_contents);
 		} else {
+			deleteInteraction(server)
 			embed.addFields({ name: "추천재생목록을 불러올수없습니다.", value: "음악은 게속 재생됩니다!" })
-			return interaction_reply(server.interaction, [], embed)
+			return send_message({ input: server, component: _component, embed: [embed] })
 		}
+		deleteInteraction(server)
 
-		if (server.interaction?.deferred) {
-			if(server.interaction.isRepliable()) {
-				try{
-					if(server.interaction.deferred || server.interaction.replied) {
-						/** pass */
-					} else {
-						server.interaction.deleteReply();
-					}
-				}catch(e) { /** empty  */}
-			}
-		}
 		send_message({ input: server, component: _component, embed: [embed] }).catch(() => { /**  */ })
 			.then(async (_embed) => {
 				if (!_embed) {
@@ -399,4 +391,18 @@ function discordEmbedErrorLogger(server: CommunityServer, e?: unknown) {
 			status: 'running',
 		}
 	});
+}
+
+function deleteInteraction(server: CommunityServer) {
+	if (server.interaction?.deferred) {
+		if(server.interaction.isRepliable()) {
+			try{
+				if(server.interaction.deferred || server.interaction.replied) {
+					/** pass */
+				} else {
+					server.interaction.deleteReply();
+				}
+			}catch(e) { /** empty  */}
+		}
+	}
 }

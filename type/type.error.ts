@@ -35,6 +35,7 @@ export enum DiscordClient {
 	not_connected_voice_channel = "_0303",
 	failed_join_voice_channel = "_0304",
 	failed_join_voice_channel2 = "_0305",
+	missing_permission = "_0306"
 }
 
 // 400 - 500 
@@ -61,6 +62,11 @@ export enum StreamingQueue {
 	shuffle_failed = "_0505"
 }
 
+// 600 - 700
+export enum Crawling {
+	unusable_query = "_0601",
+	undefined_query = "_0602",
+}
 
 // 1000 - 1100
 export enum StreamingMessage {

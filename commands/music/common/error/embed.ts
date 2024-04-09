@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import { CommunityServer } from "../../../../type/type.common";
+import type { CommunityServer } from "../../../../type/type.common";
 import { send_message } from "../../../../lib/sendMessage";
 import { client } from "../../../..";
 import { ErrorCode } from '../../../../type/type.error';
@@ -18,10 +18,14 @@ export function sendEmbed(server:CommunityServer | undefined,code:string,isEphem
 					server.interaction.followUp({embeds:[embed()],ephemeral: isEphemeral});
 					return
 				} else {
-					server.interaction.editReply({embeds:[embed()]});
+					try{
+						server.interaction.editReply({embeds:[embed()]});
+					}catch(e) {
+						send_message({input:server,embed:[embed()]})
+					}
 					return
 				}
-			}
+			} 
 		}
 	} else {
 		send_message({input:server,embed:[embed()]})
@@ -46,9 +50,10 @@ function errorEmbed(guildId:string,code:string) {
 		const list = {
 			_0001,_0002,_0101,_0102,
 			_0201,_0202,_0203,
-			_0301,_0302,_0303,_0304,_0305,
+			_0301,_0302,_0303,_0304,_0305,_0306,
 			_0401,_0402,_0404,_0405,_0406,_0407,_0408,_0409,_0410,_0411,_0412,
 			_0501,_0502,_0503,_0504,_0505,
+			_0601,_0602,
 			_1001
 		}
 
@@ -104,6 +109,10 @@ function errorEmbed(guildId:string,code:string) {
 	function _0305() {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("통방황에 연결하는데 문제가 생겼습니다. 잠시후 다시 시도해주세요!","( 게속 안된다면 다음을 확인해주세요! (레니봇 권한, 음성채널 권한) )")
+	}
+	function _0306() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("현재 권한이 부족하여 이용하실 수 없습니다.","참가(connect) 와 말하기(speak)권한을 확인 해주세요.")
 	}
 	function _0401() {
 		if(local == "en") return getEmbed("","")
@@ -169,6 +178,14 @@ function errorEmbed(guildId:string,code:string) {
 	function _0505() {
 		if(local == "en") return getEmbed("","")
 		else return getEmbed("셔플에 실패했어요..","시스템에 문제가 생긴것 같아요! \"/초기화\"후 다시 시도해주시기 바랍니다.")
+	}
+	function _0601() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("사용할 수 없는 검색어 입니다.","다른 검색어를 입력해주세요!")
+	}
+	function _0602() {
+		if(local == "en") return getEmbed("","")
+		else return getEmbed("검색결과가 존재하지 않는 검색어입니다.","다른 검색어를 입력해주세요!")
 	}
 	function _1001() {
 		if(local == "en") return getEmbed("","")

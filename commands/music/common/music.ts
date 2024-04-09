@@ -7,7 +7,6 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CacheType, ChannelType, C
 import { client } from "../../..";
 import { useGuild } from "../../../lib/useGuild";
 import { AudioPlayer, VoiceConnection } from "@discordjs/voice";
-import { error } from "winston";
 import { DiscordClient, Streaming, StreamingQueue } from "../../../type/type.error";
 import { Lang } from "../../../lib/word";
 import { CommunityServer } from '../../../type/type.common';
@@ -526,7 +525,7 @@ export class Music extends ClientResource {
 					}
 					if (member.voice.channel) {
 						if (!member.voice.channel.permissionsFor(clientUser).has('Connect') || !member.voice.channel.permissionsFor(clientUser).has('Speak')) {
-							error(this.lang.errorMissingTextChannelPermission_Title, this.lang.errorMissingTextChannelPermission_Description, this.guild);
+							this.sendEmbed(this.communityServer, DiscordClient.missing_permission)
 							return;
 						}
 					}

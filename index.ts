@@ -13,7 +13,6 @@ import fs from 'fs';
 import { Music } from './commands/music/common/music';
 import "./process/event/masterPCevent.index";
 import "./process/event/childPCevent.index";
-import "./process/event/childPCevent.message";
 import music from './process/musicStream.music';
 import spam from './process/security.spam';
 import musicStream from './process/musicStream.stream';

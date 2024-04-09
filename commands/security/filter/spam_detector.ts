@@ -1,5 +1,6 @@
 import MessageFreqFilter from "./FreqFilter"
 import MessageURLFilter from "./UrlFilter"
+import fs from 'fs';
 
 
 export default class SpamDetector {
@@ -23,6 +24,8 @@ export default class SpamDetector {
 
 	private single_detect_spam_url: Map<string/** user id */, MessageURLFilter> = new Map()
 
+	private message_freq: Map<string, Date[]> = new Map();
+	
 	constructor(_dfsps?:number, _dfsl?:number,_dssps?:number, _dssl?:number) {
 		if(_dfsps) {this.dfsps = _dfsps}
 		if(_dfsl) {this.dfsl = _dfsl}
@@ -42,6 +45,40 @@ export default class SpamDetector {
 	// }
 
 	add_message_single(userId:string, message: string) {
+
+
+
+		if(!this.message_freq.has(userId)) {
+			this.message_freq.set(userId,[new Date()])
+			setTimeout(() => {
+				const dateList = this.message_freq.get(userId)
+				if(dateList && dateList.length > 0) {
+					this.message_freq.delete(userId)
+				}
+			}, 10000)
+		} else {
+			const dateList = this.message_freq.get(userId)
+			if(dateList) {
+
+					dateList.push(new Date())
+					console.log(dateList)
+					this.message_freq.set(userId,dateList)
+
+					if(dateList.length > 2) {
+						const dir = fs.readdirSync(__dirname + "/message_freq_dataset")
+						this.message_freq.delete(userId)
+						fs.writeFileSync(__dirname + "/message_freq_dataset/"+userId+dir.length,JSON.stringify({
+							message1: dateList[0].getTime(),
+							message2: dateList[1].getTime(),
+							message3: dateList[2].getTime()
+						}))
+				}
+			}
+		}
+
+		
+
+		return;
 		if(!this.single_detect_freq_spam_per_sec.has(userId)) {
 			this.single_detect_freq_spam_per_sec.set(
 				userId,
@@ -63,24 +100,24 @@ export default class SpamDetector {
 		// 	)
 		// }
 
-		(this.single_detect_freq_spam_per_sec.get(userId) as MessageFreqFilter)
-		.added_message().then((score) => {
-			
-		});
+		// (this.single_detect_freq_spam_per_sec.get(userId) as MessageFreqFilter)
+		// .added_message().then((score) => {
 
-		const url = message.match(/(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g);
-		if(url) {
-			(this.single_detect_spam_url.get(userId) as MessageURLFilter)
-			.checkURL(url[0]).then((result) => {
-				if(result == true) {
-					/**
-					 * 
-					 * malware 탐지
-					 * 
-					 */
-				}
-			})
-		}
+		// });
+
+		// const url = message.match(/(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g);
+		// if(url) {
+		// 	(this.single_detect_spam_url.get(userId) as MessageURLFilter)
+		// 	.checkURL(url[0]).then((result) => {
+		// 		if(result == true) {
+		// 			/**
+		// 			 * 
+		// 			 * malware 탐지
+		// 			 * 
+		// 			 */
+		// 		}
+		// 	})
+		// }
 
 	}
 }
