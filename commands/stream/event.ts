@@ -11,6 +11,7 @@ export function playerEvent(player: AudioPlayer, server: CommunityServer, pid:nu
 		}
 	})
 	player.on('error', (e: AudioPlayerError) => {
+		console.log(e)
 		if (e.toString() == "Error: Video unavailable") {
 			sendPCMessage(MusicWorkerType.music, "executeStream", "failed",pid, "VideoUnavailable", { guildId: server.guild.id})
 		} else {

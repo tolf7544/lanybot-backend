@@ -251,7 +251,7 @@ export class Lang {
 
 	get clearSystemMsg_embedE_Description() {
 		if (this.local == 'en') return ['Played music is','']
-		else return ['재생된 음악는','입니다.']
+		else return ['재생된 음악은','입니다.']
 	}
 
 	get clearSystemMsg_embedE1_Title() {

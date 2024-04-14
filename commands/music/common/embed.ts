@@ -323,7 +323,7 @@ export function clearSystemMsg(common: 'common' | 'loop' | 'error' | 'error1', l
 
 	const embedE = new EmbedBuilder()
 		.setAuthor({ iconURL: icon.warn, name: lang.clearSystemMsg_embedE_Title })
-		.setDescription(`${lang.clearSystemMsg_embedE_Description[0]} **[${message.embeds[0].description}]** ${lang.clearSystemMsg_embedE_Description[1]}\n`)
+		.setDescription(`${lang.clearSystemMsg_embedE_Description[0]} **[${message.embeds[0].title}]** ${lang.clearSystemMsg_embedE_Description[1]}\n`)
 		.setThumbnail(`${message.embeds[0].image?.url}`)
 		.setColor(`Orange`)
 		.addFields({ name: 'Tip_', value: `${lang.clearSystemMsg_embedE_Footer[0]} [youtube Link](${message.embeds[0].url}) ${lang.clearSystemMsg_embedE_Footer[1]} ` })
@@ -394,10 +394,10 @@ function discordEmbedErrorLogger(server: CommunityServer, e?: unknown) {
 }
 
 function deleteInteraction(server: CommunityServer) {
-	if (server.interaction?.deferred) {
+	if (server.interaction) {
 		if(server.interaction.isRepliable()) {
 			try{
-				if(server.interaction.deferred || server.interaction.replied) {
+				if(server.interaction.replied) {
 					/** pass */
 				} else {
 					server.interaction.deleteReply();

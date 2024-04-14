@@ -37,6 +37,7 @@ export default class VersionManager {
 							}))
 							if (getVersionNum(target.name)?.pop() != (this.version as Version)[target.name]) {
 								/** version 업뎃이 필요할 때 002*/
+								if(getVersionKey(target.name)?.length == 2) return;
 								const new_pc_key = getVersionKey(target.name)?.pop()
 								if(!new_pc_key) return this.update(target.name);
 								const new_pc = this.client.process.get(new_pc_key)

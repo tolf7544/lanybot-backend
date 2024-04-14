@@ -11,9 +11,14 @@ export async function interaction_reply(interaction: ChatInputCommandInteraction
 		if(interaction.channel) {
 			if(interaction.isRepliable()) {
 				if(!interaction.deferred) {
+					try {
 					await interaction.deferReply()
+					} catch (error) {/** empty */ return false}
 				}
-				return await interaction.editReply({embeds:[_embed], components: components});
+				try {
+					return await interaction.editReply({embeds:[_embed], components: components});
+					} catch (error) {/** empty */ return false}
+				
 
 			} else {
 				return false

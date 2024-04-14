@@ -18,11 +18,7 @@ export function sendEmbed(server:CommunityServer | undefined,code:string,isEphem
 					server.interaction.followUp({embeds:[embed()],ephemeral: isEphemeral});
 					return
 				} else {
-					try{
-						server.interaction.editReply({embeds:[embed()]});
-					}catch(e) {
-						send_message({input:server,embed:[embed()]})
-					}
+					send_message({input:server,embed:[embed()]})
 					return
 				}
 			} 

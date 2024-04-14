@@ -108,7 +108,12 @@ export class Stream extends ClientResource {
 				format.hasAudio == true &&	
 				format.container == "mp4",
 				// quality: "highestaudio",
-				highWaterMark: 1 << 25,
+				highWaterMark: 1 << 62,
+				liveBuffer: 1 << 62,
+				dlChunkSize: 0,
+				requestOptions: {
+					maxRedirections: 5
+				}
 			})
 			const _resource = createAudioResource(_stream,
 				{
