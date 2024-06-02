@@ -1,0 +1,30 @@
+@startuml
+
+participant child_process
+participant parent_process
+
+alt loop versions number
+hnote over parent_process
+get version info from versions.json
+endnote
+
+
+parent_process -> child_process: send connection is available
+activate child_process
+child_process -> parent_process: send connection status
+deactivate child_process
+activate parent_process
+note right: if dead, generate process [continue]
+parent_process -> parent_process: check between saved process version data and versions.json
+alt#Gold #LightBlue version is same
+    parent_process -> parent_process: continue
+else #Pink version is differnet
+    parent_process -> child_process: check process number is under 2.
+	alt#Gold #LightBlue process is under 2
+    parent_process -> child_process: generate new process
+	note left: change legacy process status (active -> previous) & send shutDown command
+else #Pink or not
+    parent_process -> parent_process: continue.
+end
+end
+end

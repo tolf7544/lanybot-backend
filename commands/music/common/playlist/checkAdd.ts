@@ -4,16 +4,15 @@ import { PlaylistItem } from "../../../../type/type.queue"
 import { CommunityServer, Result } from "../../../../type/type.common"
 import { Common, DiscordMessage } from "../../../../type/type.error"
 import { checkPlaylistAddEmbed, checkPlaylistAddRow } from "./embed"
-import { interaction_reply } from "../../../../lib/sendMessage"
+import { send_message } from "../../../../lib/sendMessage"
 
 export function checkPlaylistAdd(videos: PlaylistItem[],guild:CommunityServer): Promise<Result<boolean, null>> {
 	return new Promise(async (resolve:((sucess:Result<boolean, null>) => void), reject:((error:Result<object, DiscordMessage | Common>) => void)) => {
 		try {
 			const {embed,embed1,embed2 } =checkPlaylistAddEmbed(guild,videos);
 			const {row} =checkPlaylistAddRow(guild);
-
-			const _embed = await interaction_reply(guild.interaction,[row],embed)
-			if (typeof _embed != "boolean") {
+			const _embed = await send_message({ input: guild, embed: [embed], component: [row] }).catch(() => {/** empty */ })
+			if (_embed && typeof _embed != "boolean") {
 
 
 				const filter = (i: { user: { id: any; }; }) => i.user.id == guild.member.id;

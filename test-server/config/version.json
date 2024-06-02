@@ -1,0 +1,16 @@
+{
+	"code": {
+		"0000": "processManagement",
+		"0001": "musicCommand",
+		"0002": "musicDatabase",
+		"0003": "musicStream",
+		"0004": "securitySpam"
+	},
+	"number": {
+		"processManagement": 0,
+		"musicCommand": 0,
+		"musicDatabase": 0,
+		"musicStream": 0,
+		"securitySpam": 0
+	}
+}

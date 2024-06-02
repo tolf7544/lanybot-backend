@@ -3,7 +3,7 @@ import { icon } from "../../../lib/icon";
 import { Metadata } from "./queue/metadata";
 import { Lang } from "../../../lib/word";
 import { CommunityServer } from '../../../type/type.common';
-import { edit_message, interaction_reply, send_message } from '../../../lib/sendMessage';
+import { edit_message, send_message } from '../../../lib/sendMessage';
 import { sendEmbed } from "./error/embed";
 import { Common, Streaming } from "../../../type/type.error";
 import { Logger } from "../../../logManager";
@@ -11,7 +11,7 @@ import { client } from "../../..";
 import { Queue } from "./queue";
 import { setTime } from "./yt_video/getMusicData";
 
-export function addEmbed(stream: Metadata, server: CommunityServer, queueSize: number, isMessage?: boolean) {
+export function addEmbed(stream: Metadata, server: CommunityServer, queueSize: number) {
 	const lang = new Lang(server.guild.id)
 	const embed = new EmbedBuilder()
 		.setAuthor({ iconURL: icon.check, name: `${lang.addEmbed_Title}` })
@@ -21,11 +21,7 @@ export function addEmbed(stream: Metadata, server: CommunityServer, queueSize: n
 		.setThumbnail(`${stream.MusicData.thumbnail}`)
 		.setColor(`Green`)
 		.setFooter({ text: server.member.displayName })
-	if (isMessage) {
 		send_message({ input: server, embed: [embed], component: [] }).catch(() => {/** empty */ })
-	} else {
-		interaction_reply(server.interaction, [], embed)
-	}
 
 }
 export function endEmbed(server: CommunityServer) {
@@ -44,7 +40,7 @@ export function skipEmbed(message: Metadata, server: CommunityServer) {
 		.setURL(message.url)
 		.setColor(`Green`)
 		.setFooter({ text: server.member.displayName })
-	interaction_reply(server.interaction, [], embed)
+		send_message({ input: server, embed: [embed], component: [] }).catch(() => {/** empty */ })
 }
 export function pauseEmbed(server: CommunityServer, metadata: Metadata) {
 	const lang = new Lang(server.guild.id)
@@ -74,7 +70,7 @@ export function preStreamEmbed2(server: CommunityServer) {
 		.setColor(`Orange`)
 		.setFooter({ text: server.member.displayName })
 
-	interaction_reply(server.interaction, [], embed)
+		send_message({ input: server, embed: [embed], component: [] }).catch(() => {/** empty */ })
 }
 
 export function preStreamEmbed(server: CommunityServer, metadata: Metadata) {
@@ -95,7 +91,7 @@ export function nextSteamEmbed2(server: CommunityServer) {
 		.setAuthor({ iconURL: `${icon.warn}`, name: `${lang.nextStream_title2}` })
 		.setColor(`Orange`)
 		.setFooter({ text: server.member.displayName })
-	interaction_reply(server.interaction, [], embed)
+		send_message({ input: server, embed: [embed], component: [] }).catch(() => {/** empty */ })
 }
 
 export function nextSteamEmbed(server: CommunityServer, metadata: Metadata) {
@@ -107,7 +103,7 @@ export function nextSteamEmbed(server: CommunityServer, metadata: Metadata) {
 		.setColor(`Green`)
 		.setFooter({ text: server.member.displayName })
 
-	interaction_reply(server.interaction, [], embed)
+		send_message({ input: server, embed: [embed], component: [] }).catch(() => {/** empty */ })
 }
 
 export function shuffleEmbed(server: CommunityServer, queue: Queue) {
@@ -130,7 +126,7 @@ export function shuffleEmbed(server: CommunityServer, queue: Queue) {
 		.setDescription(titles)
 		.setColor(`Green`)
 		.setFooter({ text: server.member.displayName })
-	interaction_reply(server.interaction, [], embed)
+		send_message({ input: server, embed: [embed], component: [] }).catch(() => {/** empty */ })
 }
 
 export function clearEmbed(server: CommunityServer) {
@@ -138,7 +134,7 @@ export function clearEmbed(server: CommunityServer) {
 	const embed = new EmbedBuilder()
 		.setAuthor({ iconURL: `${icon.play}`, name: `${lang.clear_queue_title}` })
 		.setColor(`Green`)
-	interaction_reply(server.interaction, [], embed)
+		send_message({ input: server, embed: [embed], component: [] }).catch(() => {/** empty */ })
 }
 
 export function loopEmbed(server: CommunityServer, input: string, metadata: Metadata | undefined) {
@@ -182,7 +178,7 @@ export async function showStream(server: CommunityServer, playingMusic: Metadata
 		.setTitle(title)
 		.setDescription(DESTimeStamp)
 		.setThumbnail(Thumbnail)
-	await interaction_reply(server.interaction, [], _embed)
+	await send_message({ input: server, embed: [_embed], component: [] }).catch(() => {/** empty */ })
 }
 
 export function playEmbed(stream: Metadata, server: CommunityServer, lang: Lang, queueSize: number) {
@@ -278,7 +274,7 @@ export function playEmbed(stream: Metadata, server: CommunityServer, lang: Lang,
 
 							for (let j = 0; j < i.values.length; j++) {
 								await Stream.queue.add("https://www.youtube.com/watch?v=" + i.values[j], false, server, ((metadata: Metadata) => {
-									addEmbed(metadata, server, Stream.queue.size, true)
+									addEmbed(metadata, server, Stream.queue.size)
 								}));
 
 							}

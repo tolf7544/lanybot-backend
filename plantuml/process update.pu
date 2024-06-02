@@ -1,0 +1,25 @@
+@startuml
+
+participant legacy_child_process
+participant parent_process
+participant new_child_process
+
+
+parent_process -> parent_process: generate new process
+parent_process -> new_child_process: send role & path
+
+
+parent_process -> legacy_child_process: send shutdown 
+alt loop when legacy process user is zero
+activate legacy_child_process
+legacy_child_process -> parent_process: send legacy process using client user 
+deactivate legacy_child_process
+activate parent_process
+parent_process -> new_child_process: pass legacy_child_process message
+deactivate parent_process
+end
+
+legacy_child_process -> parent_process: send shutdown
+activate parent_process
+parent_process -> legacy_child_process: run shutdown
+deactivate parent_process

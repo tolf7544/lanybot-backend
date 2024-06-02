@@ -1,5 +1,5 @@
 import { client } from "../..";
-import { musicIPCdataFormat } from "../../type/type.IPCdata";
+import { musicIPCdataFormat } from "../../test-server/type/type.process";
 import { Stream } from "./stream";
 import { AudioPlayerStatus, VoiceConnectionStatus } from "@discordjs/voice";
 import { sendPCMessage } from "./usePC";

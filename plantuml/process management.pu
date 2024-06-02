@@ -1,26 +1,37 @@
 @startuml
 
-participant process
+participant child_process
+participant parent_process
 
-participant management
+hnote over parent_process
+get version info from versions.json
+endnote
 
-management -> process : process.exit request
+alt loop versions number
+parent_process -> child_process: fork process & save proccess version data
+activate parent_process
+activate child_process
 
-process -> process : check queue
+hnote over child_process
+pass client event 
+(prevent crash with legacy process)
+endnote
 
-process -> management : send processing queue list
+parent_process -> child_process: send path and rule
 
-new_process <- management : send processing queue list
+parent_process -> child_process: send legacy process user data (default [] )
 
-management -> process : check processing queue request per ten seconds
-activate process
+deactivate child_process
+deactivate parent_process
 
+hnote over child_process
+preparing client listen or another process interact by path
+(prevent crash with legacy process)
+endnote
 
-process -> management : send processing queue
-activate management
+hnote over child_process
+listen client event
+(pass using legacy process client user )
+endnote
 
-management -> new_process : send processing queue
-
-process -> management : finish queue and exit
-deactivate process
-deactivate management
+end

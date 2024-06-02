@@ -1,4 +1,4 @@
-import { musicIPCdataFormat } from "../../../type/type.IPCdata";
+import { musicIPCdataFormat } from "../../../test-server/type/type.process";
 import { DiscordClient, Streaming } from "../../../type/type.error";
 import { ActionStatus, FailedReason, MusicWorkerAction } from '../../../type/type.stream';
 import { MusicWorkerType, ProcessMessage } from "../../../type/type.versionManager";
