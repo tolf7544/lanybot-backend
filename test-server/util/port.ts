@@ -32,14 +32,14 @@ export function existPortNumber(port: number,callback: CallableFunction) {
 export function GetActivePortNumberList(number:number) {
 		const portData:PortConfig | number = getPortConfig();
         if(typeof portData == "number") {
+            // error 리턴
             return portData;
         }
 
 		let activePort = number;
         
         for(let i = 0; i < 1000; i++) {
-            
-            if(number in portData.active) {
+            if(activePort in portData.active) {
                 activePort += 1;
             } else {
                 break;
@@ -73,4 +73,12 @@ export function getPortConfig(): PortConfig | number {
         */
         return 0/** p-block 거부 코드 리턴 [0 -> 임시]*/
     }
+}
+
+console.log(GetActivePortNumberList())
+
+
+
+export class portInfo {
+    
 }
