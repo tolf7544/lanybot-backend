@@ -1,6 +1,8 @@
 import net from "net";
 import fs from 'fs';
 import { PortConfig } from "../type/type.process";
+import { Port } from "../type/type.port";
+import { PortError } from "../type/type.error";
 
 /**
  * 
@@ -79,6 +81,50 @@ console.log(GetActivePortNumberList())
 
 
 
-export class portInfo {
+export class port implements Port {
+    configPath = "../config/port.json";
+
+
+    get data(): PortConfig | PortError {
+        try {
+            if (fs.existsSync(this.configPath)) {
+                const portConfig = fs.readFileSync(this.configPath, "utf-8"); //리눅스 os에서 문제 발생하는지 확인 필요
+                const portData: PortConfig = JSON.parse(portConfig);
+                return portData;
+            } else {
+                const portConfig: PortConfig = {
+                    default: 9001,
+                    active: []
+                }
+
+                fs.writeFileSync(this.configPath, JSON.stringify(portConfig), "utf-8");
+                return portConfig;
+            }
+        } catch (e) {
+            /** fs에서 읽어오는데 문제 발생 
+             * log남겨야함
+             * p-block 등록 시에는 거부 메시지 전송 필요
+            */
+            return "0001"/** p-block 거부 코드 리턴 [0 -> 임시]*/
+        }
+    }
+
+    isUsingPort(port: number): Promise<boolean> {
+        return new Promise<boolean>((resolve:(value: boolean) => void,reject: (error: PortError) => void) => {
+            const server = net.createServer(socket => {
+                socket.write('Echo server\r\n');
+                socket.pipe(socket);
+            });
+        
+            server.on('error', () => reject("0002"));
+            server.on('listening', () => (server.close(), resolve(true)));
+        
+            server.listen(port);
+        })
+    }
+
+    get Port(): number | PortError {
+        
+    }
     
 }
