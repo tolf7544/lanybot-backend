@@ -18,10 +18,10 @@ export interface Port {
 	 * 
 	 * 
 	 * @returns Boolean
-	 * [success] -> 입력된 포트의 사용 유무
+	 * [success] -> 입력된 포트의 사용 가능
 	 * 
 	 * @returns PortError
-	 * [error] -> 에러코드 리턴
+	 * [error] -> 입력된 포트 사용 불가능 (logging)
 	 */
 	isUsingPort(port: number): Promise<boolean>,
 
@@ -34,5 +34,18 @@ export interface Port {
 	 * @returns PortError
 	 * [error] -> 에러코드 리턴
 	 */
-	get Port(): number | PortError
+	get getPortNumber(): Promise<number | PortError>
+
+		/**
+	 * 사용가능한 포트를 반복하여 확인 후 리턴
+	 * 
+	 * @param portNumber
+	 * 
+	 * @returns number
+	 * [success] -> 사용가능한 포트 리턴
+	 * 
+	 * @returns PortError
+	 * [error] -> 에러코드 리턴
+	 */
+	portLoopCheck(portNumber: number): Promise<number | PortError>
 }

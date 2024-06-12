@@ -10,7 +10,7 @@ export type Process = {
 } 
 
 export type Log = {
-	role: "main" | keyof typeof ProcessRole,
+	role: ProcessRole,
 	message: string
 }
 

@@ -1,9 +1,9 @@
 import net from "net";
 import fs from 'fs';
-import { PortConfig } from "../type/type.process";
+import { PortConfig, ProcessData } from "../type/type.process";
 import { Port } from "../type/type.port";
-import { PortError } from "../type/type.error";
-
+import { PortError, portError } from "../type/type.error";
+import { portLogger } from "./log";
 /**
  * 
  * @param port 사용할 포트 입력
@@ -83,6 +83,13 @@ console.log(GetActivePortNumberList())
 
 export class port implements Port {
     configPath = "../config/port.json";
+    setting: PortConfig;
+    maximumPort: number = 65535;
+    processData: ProcessData;
+
+    constructor(_processData:ProcessData) {
+        this.processData = _processData;
+    }
 
 
     get data(): PortConfig | PortError {
@@ -116,15 +123,50 @@ export class port implements Port {
                 socket.pipe(socket);
             });
         
-            server.on('error', () => reject("0002"));
-            server.on('listening', () => (server.close(), resolve(true)));
+            server.on('error', (err) => {
+                portLogger(__filename,{
+                    role:this.processData.role,
+                    message: `${portError["0002"]}\n${err}`
+                })
+                reject("0002")
+            });
+            server.on('listening', () => (server.close(), resolve(false)));
         
             server.listen(port);
         })
     }
 
-    get Port(): number | PortError {
-        
+    getPortNumber(): Promise<number | PortError> {
+        const setting = this.data;
+        let port: number;
+
+        if(typeof setting == "string") {
+            return setting;
+        } else {
+            this.setting = setting;
+            return this.portLoopCheck(setting.default)
+        }
     }
     
+    portLoopCheck(portNumber: number): Promise<number | PortError> {
+        return this.isUsingPort(portNumber).then(() => { /** 사용가능 */
+            return portNumber;
+        }).catch(() => { /** 사용 불가능 */
+            if(portNumber > this.maximumPort) { /** 모든 포트 사용 불가능 경우 */
+                return "0003"
+            } else {
+                portNumber += 1;
+                if(portNumber in this.setting.active) {
+                    for(let i=0;i < this.setting.active.length; i++) {
+                        if(portNumber in this.setting.active) {
+                            portNumber += 1;
+                            continue;
+                        }
+                        break;
+                    }
+                }
+                return this.portLoopCheck(portNumber);
+            }
+        })
+    }
 }
