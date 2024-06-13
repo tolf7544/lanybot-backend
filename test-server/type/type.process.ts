@@ -1,4 +1,5 @@
 import { Status } from "./type.pm"
+import net from 'net';
 
 export type  musicIPCdataFormat = {
 	youtubeId: string,
@@ -12,6 +13,7 @@ export type  musicIPCdataFormat = {
 export type ProcessData = {
 	role: ProcessRole, 
 	active: boolean,
+	client: net.Socket,
 	notRegisterProcess: boolean, // 중앙 버전 관리 프로세스를 이용하지 않음 ( 단독 및 특별한 케이스 )
 	legacyUser: Set<string>,
 	port: number
