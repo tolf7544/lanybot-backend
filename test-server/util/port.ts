@@ -1,6 +1,6 @@
 import net from "net";
 import fs from 'fs';
-import { PortConfig, ProcessData } from "../type/type.process";
+import { PortConfig, ProcessData } from '../type/type.process';
 import { Port } from "../type/type.port";
 import { PortError, portError } from "../type/type.error";
 import { portLogger } from "./log";
@@ -41,6 +41,10 @@ export class port implements Port {
         }
     }
 
+    saveData() {
+        fs.writeFileSync(this.configPath, JSON.stringify(this.setting), "utf-8");
+    }
+ 
     isUsingPort(port: number): Promise<boolean> {
         return new Promise<boolean>((resolve:(value: boolean) => void,reject: (error: PortError) => void) => {
             const server = net.createServer(socket => {
@@ -82,11 +86,22 @@ export class port implements Port {
     
     private portLoopCheck(portNumber: number): Promise<number | PortError> {
         return this.isUsingPort(portNumber).then(() => { /** 사용가능 */
+            if(this.setting.active.includes(portNumber)) {
+                const index = this.setting.active.indexOf(portNumber);
+                this.setting.active.splice(index, 1);
+                this.saveData();
+            }
+
             return portNumber;
         }).catch(() => { /** 사용 불가능 */
             if(portNumber > this.maximumPort) { /** 모든 포트 사용 불가능 경우 */
                 return "0003"
             } else {
+                if(!this.setting.active.includes(portNumber)) {
+                    this.setting.active.push(portNumber)
+                    this.saveData();
+                }
+
                 portNumber += 1;
                 if(portNumber in this.setting.active) {
                     for(let i=0;i < this.setting.active.length; i++) {

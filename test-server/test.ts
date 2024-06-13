@@ -17,9 +17,9 @@ function main() {
     const portSetting = new port(testProcessData);
 
 	portSetting.getPortNumber().then((value) => {
-		testDebug(JSON.stringify(value))
+		//testDebug(JSON.stringify(value))
 	}).catch((e) => {
-		testDebug(JSON.stringify(e))
+		//testDebug(JSON.stringify(e))
 	})
 
 

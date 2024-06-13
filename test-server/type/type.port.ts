@@ -50,4 +50,10 @@ export interface Port {
 	 * private portLoopCheck(portNumber: number): Promise<number | PortError>
 	 */
 	
+	/**
+	 * config.port.json 정보를 수정함
+	 * 
+	 * private editData(data: string): void;
+	*/
+
 }
