@@ -34,9 +34,9 @@ export interface Port {
 	 * @returns PortError
 	 * [error] -> 에러코드 리턴
 	 */
-	get getPortNumber(): Promise<number | PortError>
+	getPortNumber(): Promise<number | PortError> | PortError;
 
-		/**
+	/**
 	 * 사용가능한 포트를 반복하여 확인 후 리턴
 	 * 
 	 * @param portNumber
@@ -46,6 +46,8 @@ export interface Port {
 	 * 
 	 * @returns PortError
 	 * [error] -> 에러코드 리턴
+	 * 
+	 * private portLoopCheck(portNumber: number): Promise<number | PortError>
 	 */
-	portLoopCheck(portNumber: number): Promise<number | PortError>
+	
 }

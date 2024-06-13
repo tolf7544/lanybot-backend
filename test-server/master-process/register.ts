@@ -41,7 +41,7 @@ function register(message: ProcessRegister):{port?: number,status: Status} {
 	console.debug(process)
 	if(process) {
 		if(process.length >= 2) {
-			processLogger(__filename,{role: "main", message: "active process is more than 2. waiting for finish legacy process."})
+			processLogger(__filename,{role: ProcessRole.processManagement, message: "active process is more than 2. waiting for finish legacy process."})
 			return {
 				status: "canceled"
 			};
@@ -58,7 +58,7 @@ function register(message: ProcessRegister):{port?: number,status: Status} {
 				status: "active"
 			})
 
-			processLogger(__filename,{role: "main", message: "update process version."+` legacy version: ${process[0].version}`})
+			processLogger(__filename,{role: ProcessRole.processManagement, message: "update process version."+` legacy version: ${process[0].version}`})
 			return {
 				port: temp.pop(),
 				status: "success"
@@ -73,7 +73,7 @@ function register(message: ProcessRegister):{port?: number,status: Status} {
 			status: "active"
 		})
 		
-		processLogger(__filename,{role: "main", message: "generate process. active version: "+ number[versionCode]})
+		processLogger(__filename,{role: ProcessRole.processManagement, message: "generate process. active version: "+ number[versionCode]})
 		return {
 			port: undefined,
 			status: "success"

@@ -3,19 +3,48 @@ import fs from 'fs';
 import version from "../config/version.json";
 import { debugLog } from "./util";
 
+export function logSetting() {
+	if(fs.existsSync("../log")) {
+		return true;
+	} else {
+		try {
+			fs.mkdirSync("../log")
+			return true;
+		} catch (error) {
+			console.log("mkdir failed. check permission.")
+			return false;
+		}
+		
+	}
+}
+
 export function portLogger(file_name: string,info: Log) {
 	const date = new Date().getTime();
+	const result = logSetting();
+	if(result == false) {
+		return;
+	}
+
 	fs.appendFile("../log/port",`${date} [${info.role}] ${info.message} \n ${file_name}`, (() => {/** empty */}))
 }
 
 export function processLogger(file_name: string,info: Log) {
 	const date = new Date().getTime();
+	const result = logSetting();
+	if(result == false) {
+		return;
+	}
+
 	debugLog(`${date} [${info.role}] ${info.message} \n ${file_name}`)
 	fs.appendFile("../log/process",`${date} [${info.role}] ${info.message} \n ${file_name}`, (() => {/** empty */}))
 }
 
 export function heartbeatLogger(file_name: string, role: keyof typeof version.code) {
 	const date = new Date().getTime();
+	const result = logSetting();
+	if(result == false) {
+		return;
+	}
 
 	fs.appendFile("../log/status",`${role}${date} \n ${file_name}`, (() => {/** empty */}))
 }
