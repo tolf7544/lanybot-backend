@@ -11,4 +11,9 @@ export const portError = {
 "0003": "port.port.portLoopCheck() (all port is not useable. try again later.)"
 } as const
 
+export const portMessage = {
+	"0011": "need client(process) connect socket.",
+	} as const
+
 export type PortError = keyof typeof portError;
+export type PortMessage = keyof typeof portMessage;

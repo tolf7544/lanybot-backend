@@ -3,6 +3,8 @@ import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
 import { ProcessNet } from "../type/type.pm";
+import { PortMessage, portMessage } from "../type/type.error";
+import { manageSocketConnectionParams } from "../type/type.port";
 
 
 export class subProcess implements ProcessNet {
@@ -24,6 +26,27 @@ export class subProcess implements ProcessNet {
     
         this.processErrorEvent()
     }
+
+    get clientProcess():PortMessage | net.Socket {
+        if(!this.processData.client) {
+            return "0011"
+        } else {
+            return this.processData.client
+        }
+    }
+
+    /** socket connection management function */
+
+    manageSocketConnection({execution}: manageSocketConnectionParams) {
+
+        if(execution == "check-connection") {
+            const testConnection = this.clientProcess;
+
+            if(testConnection == "0011") return /** need  */
+        }
+    }
+
+    /**  */
 
     connectManagementProcess() {
         this.processData.client = net.createConnection({ port: port.default }, () => {
@@ -62,13 +85,13 @@ export class subProcess implements ProcessNet {
             } else {
                 setTimeout(() => {
                     debugLog("retry register request.")
-                    return this.registerRequest(this.processData.client as net.Socket,this.processData);
+                    return this.registerRequest(this.processData);
                 }, 1000*10);
             }
         }
     }
 
-    private registerRequest(client: net.Socket,processData:ProcessData) {
+    private registerRequest(processData:ProcessData) {
         if(processData.notRegisterProcess == true) {
             debugLog("pass management process registering.")
             return "success";

@@ -1,7 +1,17 @@
 import { PortError } from './type.error';
-import { PortConfig } from './type.process';
+import { PortConfig, ProcessData } from './type.process';
+
+export type manageSocketConnectionParams = {
+	execution: "connect" | "disconnect" | "check-connection" | "heartbeat"
+}
 
 export interface Port {
+
+    configPath: string;
+    info: PortConfig;
+    maximumPort: number;
+    processData: ProcessData;
+
 	/**
 	 * config/port.json 정보 가져오는 get 함수
 	 * 

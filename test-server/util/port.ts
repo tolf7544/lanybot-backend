@@ -8,7 +8,7 @@ import { portLogger } from "./log";
 
 export class port implements Port {
     configPath = __dirname.replace("util","config/")+"port.json";
-    setting: PortConfig;
+    info: PortConfig;
     maximumPort: number = 65535;
     processData: ProcessData;
 
@@ -42,7 +42,7 @@ export class port implements Port {
     }
 
     saveData() {
-        fs.writeFileSync(this.configPath, JSON.stringify(this.setting), "utf-8");
+        fs.writeFileSync(this.configPath, JSON.stringify(this.info), "utf-8");
     }
  
     isUsingPort(port: number): Promise<boolean> {
@@ -72,7 +72,7 @@ export class port implements Port {
             if(typeof setting == "string") {
                 return reject(setting);
             } else {
-                this.setting = setting;
+                this.info = setting;
                 this.portLoopCheck(setting.default).then((value) => {
                     if(typeof value == "string") {
                         reject(value);
@@ -86,9 +86,9 @@ export class port implements Port {
     
     private portLoopCheck(portNumber: number): Promise<number | PortError> {
         return this.isUsingPort(portNumber).then(() => { /** 사용가능 */
-            if(this.setting.active.includes(portNumber)) {
-                const index = this.setting.active.indexOf(portNumber);
-                this.setting.active.splice(index, 1);
+            if(this.info.active.includes(portNumber)) {
+                const index = this.info.active.indexOf(portNumber);
+                this.info.active.splice(index, 1);
                 this.saveData();
             }
 
@@ -97,15 +97,15 @@ export class port implements Port {
             if(portNumber > this.maximumPort) { /** 모든 포트 사용 불가능 경우 */
                 return "0003"
             } else {
-                if(!this.setting.active.includes(portNumber)) {
-                    this.setting.active.push(portNumber)
+                if(!this.info.active.includes(portNumber)) {
+                    this.info.active.push(portNumber)
                     this.saveData();
                 }
 
                 portNumber += 1;
-                if(portNumber in this.setting.active) {
-                    for(let i=0;i < this.setting.active.length; i++) {
-                        if(portNumber in this.setting.active) {
+                if(portNumber in this.info.active) {
+                    for(let i=0;i < this.info.active.length; i++) {
+                        if(portNumber in this.info.active) {
                             portNumber += 1;
                             continue;
                         }
