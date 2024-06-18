@@ -1,16 +1,46 @@
 import { PortError } from './type.error';
 import { PortConfig, ProcessData } from './type.process';
+import { Status } from './type.util';
+import net from 'net';
 
-export type manageSocketConnectionParams = {
-	execution: "connect" | "disconnect" | "check-connection" | "heartbeat"
+type ManageSocketConnect = {
+	execution: "connect",
+	socket: net.Socket | PortError
+}
+
+type ManageSocketDisconnect = {
+	execution: "disconnect",
+	socket: true | PortError
+}
+
+type ManageSocketCheckConnection = {
+	execution: "connect",
+	socket: boolean | PortError
+}
+
+type ManageSocketHeartbeat = {
+	execution: "heartbeat",
+	socket: net.Socket | PortError
+}
+
+export type ManageSocketConnectionParams = {
+	execution: ManageSocketConnect["execution"] |
+	ManageSocketDisconnect["execution"] |
+	ManageSocketCheckConnection["execution"] |
+	ManageSocketHeartbeat["execution"]
+}
+
+export type manageSocketConnectionReturn = {
+	input: ManageSocketConnectionParams["execution"]
+	status: Status
 }
 
 export interface Port {
 
-    configPath: string;
-    info: PortConfig;
-    maximumPort: number;
-    processData: ProcessData;
+	configPath: string;
+	info: PortConfig;
+	maximumPort: number;
+	processData: ProcessData;
 
 	/**
 	 * config/port.json 정보 가져오는 get 함수
@@ -59,7 +89,7 @@ export interface Port {
 	 * 
 	 * private portLoopCheck(portNumber: number): Promise<number | PortError>
 	 */
-	
+
 	/**
 	 * config.port.json 정보를 수정함
 	 * 

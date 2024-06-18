@@ -4,14 +4,14 @@ import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
 import { ProcessNet } from "../type/type.pm";
 import { PortMessage, portMessage } from "../type/type.error";
-import { manageSocketConnectionParams } from "../type/type.port";
+import { manageSocketConnectionParams, manageSocketConnectionReturn } from "../type/type.port";
 
 
 export class subProcess implements ProcessNet {
-    processData:ProcessData;
+    processData: ProcessData;
 
-    constructor(role:ProcessRole,notRegisterProcess?:boolean) {
-        if(!notRegisterProcess) {
+    constructor(role: ProcessRole, notRegisterProcess?: boolean) {
+        if (!notRegisterProcess) {
             notRegisterProcess = false;
         }
 
@@ -23,12 +23,12 @@ export class subProcess implements ProcessNet {
             port: 0,
             client: undefined
         }
-    
+
         this.processErrorEvent()
     }
 
-    get clientProcess():PortMessage | net.Socket {
-        if(!this.processData.client) {
+    get clientProcess(): PortMessage | net.Socket {
+        if (!this.processData.client) {
             return "0011"
         } else {
             return this.processData.client
@@ -37,12 +37,31 @@ export class subProcess implements ProcessNet {
 
     /** socket connection management function */
 
-    manageSocketConnection({execution}: manageSocketConnectionParams) {
+    manageSocketConnection({ execution }: manageSocketConnectionParams): manageSocketConnectionReturn {
+        const socket = this.clientProcess;
+        const isClientNull = socket == "0011" ? true : false;
+        const isConnecting = socket != "0011" ? socket.connecting : false;
+        const isClientConnect = isClientNull && isConnecting ? true : false;
 
-        if(execution == "check-connection") {
-            const testConnection = this.clientProcess;
+        if (execution == "check-connection") {
+            if (isClientConnect) {
+                return {
+                    input: execution,
+                    status: "success",
+                    boolean: true
+                };
+            } else {
+                return {
+                    input: execution,
+                    status: "success",
+                    boolean: true
+                };
+            }
 
-            if(testConnection == "0011") return /** need  */
+        } else if (execution == "connect") {
+            if (isClientConnect) {
+                return socket;
+            }
         }
     }
 
@@ -50,15 +69,15 @@ export class subProcess implements ProcessNet {
 
     connectManagementProcess() {
         this.processData.client = net.createConnection({ port: port.default }, () => {
-	
-            const result = this.registerRequest(this.processData.client as net.Socket,this.processData);
-        
-            if(result == "success") {
+
+            const result = this.registerRequest(this.processData.client as net.Socket, this.processData);
+
+            if (result == "success") {
                 debugLog("process active. [ignore management process]")
                 this.processData.active = true;
             }
         });
-        
+
         this.processData.client.on('data', (data) => this.receiveSoketEvent(data));
         this.processData.client.on('end', () => {
             console.log('disconnected from server');
@@ -72,41 +91,41 @@ export class subProcess implements ProcessNet {
     }
 
     createServer() {
-        
+
     }
 
-    private receiveSoketEvent(data:Buffer) {
+    private receiveSoketEvent(data: Buffer) {
         const message = JSON.parse(data.toString()) as ProcessMessage;
-        
-        if(message.type == "register-response") {
-            if(message.state == "success") {
+
+        if (message.type == "register-response") {
+            if (message.state == "success") {
                 debugLog("process active. [received ok sign from management process2]")
                 this.processData.active = true;
             } else {
                 setTimeout(() => {
                     debugLog("retry register request.")
                     return this.registerRequest(this.processData);
-                }, 1000*10);
+                }, 1000 * 10);
             }
         }
     }
 
-    private registerRequest(processData:ProcessData) {
-        if(processData.notRegisterProcess == true) {
+    private registerRequest(processData: ProcessData) {
+        if (processData.notRegisterProcess == true) {
             debugLog("pass management process registering.")
             return "success";
         }
         debugLog("send register to management process")
-        client.write(JSON.stringify({
-            type: "register-request",
-            time: TodayDate(),
-            pid: process.pid,
-            role: processData.role,
-        } as ProcessRegister))
+        // client.write(JSON.stringify({
+        //     type: "register-request",
+        //     time: TodayDate(),
+        //     pid: process.pid,
+        //     role: processData.role,
+        // } as ProcessRegister))
     }
 
-    private processErrorEvent() {        
-        process.on("uncaughtException",(error) => {
+    private processErrorEvent() {
+        process.on("uncaughtException", (error) => {
             debugLog(JSON.stringify(error))
         })
     }

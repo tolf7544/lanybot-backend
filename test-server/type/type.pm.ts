@@ -7,14 +7,12 @@ export type Process = {
 	version: number,
 	port: number,
 	status: "previous" | "active" | "loading",
-} 
+}
 
 export type Log = {
 	role: ProcessRole,
 	message: string
 }
-
-export type Status = "success" | "canceled" | "failed" | "error" 
 
 export interface ProcessNet {
 	/**
@@ -35,13 +33,13 @@ export interface ProcessNet {
 	 * connect another sub process & use connection socket object at callback function.
 	 * 
 	 */
-	connectSubProcess(run:CallableFunction):void,
+	connectSubProcess(run: CallableFunction): void,
 	/**
 	 * 
 	 * create connection base when sub process need connection this process.
 	 * 
 	 */
-	createServer():void,
+	createServer(): void,
 	//private receiveSoketEvent():void
 	//private registerRequest(client: net.Socket,processData:ProcessData):"success" | undefined
 } 
