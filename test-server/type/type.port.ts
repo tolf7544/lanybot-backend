@@ -5,35 +5,43 @@ import net from 'net';
 
 type ManageSocketConnect = {
 	execution: "connect",
-	socket: net.Socket | PortError
+	result: net.Socket | PortError
+	option: {
+		port: number,
+		timeout: number
+	}
 }
 
 type ManageSocketDisconnect = {
 	execution: "disconnect",
-	socket: true | PortError
+	result: true | PortError
 }
 
 type ManageSocketCheckConnection = {
-	execution: "connect",
-	socket: boolean | PortError
+	execution: "check-connection",
+	result: boolean | PortError
 }
 
 type ManageSocketHeartbeat = {
 	execution: "heartbeat",
-	socket: net.Socket | PortError
+	result: net.Socket | PortError
 }
 
-export type ManageSocketConnectionParams = {
-	execution: ManageSocketConnect["execution"] |
-	ManageSocketDisconnect["execution"] |
-	ManageSocketCheckConnection["execution"] |
-	ManageSocketHeartbeat["execution"]
+type ManageSocketMethod = ManageSocketConnect |
+ManageSocketDisconnect |
+ManageSocketCheckConnection |
+ManageSocketHeartbeat
+
+export type manageSocketConnectionParams = {
+	execution: ManageSocketMethod["execution"],
+	option: 
 }
 
 export type manageSocketConnectionReturn = {
-	input: ManageSocketConnectionParams["execution"]
+	input: ManageSocketMethod["execution"]
+	result: ManageSocketMethod["result"]
 	status: Status
-}
+} | Promise<>
 
 export interface Port {
 

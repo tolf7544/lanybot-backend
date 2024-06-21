@@ -38,39 +38,49 @@ export class subProcess implements ProcessNet {
     /** socket connection management function */
 
     manageSocketConnection({ execution }: manageSocketConnectionParams): manageSocketConnectionReturn {
-        const socket = this.clientProcess;
+        let socket = this.clientProcess;
         const isClientNull = socket == "0011" ? true : false;
         const isConnecting = socket != "0011" ? socket.connecting : false;
         const isClientConnect = isClientNull && isConnecting ? true : false;
+        socket = socket as net.Socket
 
         if (execution == "check-connection") {
             if (isClientConnect) {
                 return {
                     input: execution,
                     status: "success",
-                    boolean: true
+                    result: true
                 };
             } else {
                 return {
                     input: execution,
                     status: "success",
-                    boolean: true
+                    result: true
                 };
             }
 
         } else if (execution == "connect") {
             if (isClientConnect) {
-                return socket;
+                return {
+                    input: execution,
+                    status: "success",
+                    result: socket
+                };
+            } else {
+
             }
         }
     }
 
+    connectSocket() {
+
+    }
     /**  */
 
     connectManagementProcess() {
         this.processData.client = net.createConnection({ port: port.default }, () => {
 
-            const result = this.registerRequest(this.processData.client as net.Socket, this.processData);
+            const result = this.registerRequest(this.processData);
 
             if (result == "success") {
                 debugLog("process active. [ignore management process]")
