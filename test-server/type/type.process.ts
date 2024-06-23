@@ -35,7 +35,7 @@ export type Heartbeat = {
 	type: "heartbeat",
 	time: string,
 	role: ProcessRole,
-	checkPoint: Array<string>
+	checkPoint: Array<number>
 }
 
 export type ProcessRegister = {

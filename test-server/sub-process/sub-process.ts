@@ -1,14 +1,16 @@
-import { ProcessData, ProcessMessage, ProcessRegister, ProcessRole } from "../type/type.process";
+import { ProcessData, ProcessMessage, ProcessRole } from "../type/type.process";
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
-import { ProcessNet } from "../type/type.pm";
-import { PortMessage, portMessage } from "../type/type.error";
+import { ProcessNet, functionCode } from "../type/type.pm";
+import { PortError, PortMessage } from "../type/type.error";
 import { manageSocketConnectionParams, manageSocketConnectionReturn } from "../type/type.port";
+import { portManager } from "../util/port";
 
 
 export class subProcess implements ProcessNet {
     processData: ProcessData;
+    portSetting: portManager;
 
     constructor(role: ProcessRole, notRegisterProcess?: boolean) {
         if (!notRegisterProcess) {
@@ -24,6 +26,8 @@ export class subProcess implements ProcessNet {
             client: undefined
         }
 
+        this.portSetting = new portManager(this.processData);
+        
         this.processErrorEvent()
     }
 
@@ -49,13 +53,15 @@ export class subProcess implements ProcessNet {
                 return {
                     input: execution,
                     status: "success",
-                    result: true
+                    result: true,
+                    type: "sync"
                 };
             } else {
                 return {
                     input: execution,
                     status: "success",
-                    result: true
+                    result: true,
+                    type: "sync"
                 };
             }
 
@@ -64,22 +70,50 @@ export class subProcess implements ProcessNet {
                 return {
                     input: execution,
                     status: "success",
-                    result: socket
+                    result: socket,
+                    type: "sync"
                 };
             } else {
-
+                return {
+                    input: execution,
+                    status: "pending",
+                    result: this.connectSocket(),
+                    type: "async"
+                }
+            }
+        } else { // heartbeat
+            return {
+                input: "heartbeat",
+                status: "pending",
+                type: "async",
+                result: {
+                    type: "heartbeat",
+                    time: TodayDate(),
+                    role: this.processData.role,
+                    checkPoint: [functionCode["port management class"]]
+                }
             }
         }
     }
 
     connectSocket() {
+        return new Promise((resolve: (value: net.Socket) => void,reject: (error: PortError) => void) => {
+            this.portSetting.getPortNumber().then((portNumber) => {
+                this.processData.client = net.createConnection({ port: portNumber }, () => {
+                    // this.processData.client == net.Socket (createConnection 실행 후 net.Socket 리턴 되며 해당 리턴 값을 resolve의 인자값으로 넘김)
+                    resolve(this.processData.client as net.Socket);
+                })
+            }).catch((error:PortError) => {
+                reject(error);
+            })
+            
 
+        })
     }
     /**  */
 
     connectManagementProcess() {
         this.processData.client = net.createConnection({ port: port.default }, () => {
-
             const result = this.registerRequest(this.processData);
 
             if (result == "success") {
@@ -101,7 +135,7 @@ export class subProcess implements ProcessNet {
     }
 
     createServer() {
-
+        
     }
 
     private receiveSoketEvent(data: Buffer) {

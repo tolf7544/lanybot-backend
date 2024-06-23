@@ -1,5 +1,5 @@
 import { PortError } from './type.error';
-import { PortConfig, ProcessData } from './type.process';
+import { Heartbeat, PortConfig, ProcessData } from './type.process';
 import { Status } from './type.util';
 import net from 'net';
 
@@ -12,11 +12,6 @@ type ManageSocketConnect = {
 	}
 }
 
-type ManageSocketDisconnect = {
-	execution: "disconnect",
-	result: true | PortError
-}
-
 type ManageSocketCheckConnection = {
 	execution: "check-connection",
 	result: boolean | PortError
@@ -24,24 +19,23 @@ type ManageSocketCheckConnection = {
 
 type ManageSocketHeartbeat = {
 	execution: "heartbeat",
-	result: net.Socket | PortError
+	result: Heartbeat | PortError
 }
 
 type ManageSocketMethod = ManageSocketConnect |
-ManageSocketDisconnect |
 ManageSocketCheckConnection |
 ManageSocketHeartbeat
 
 export type manageSocketConnectionParams = {
-	execution: ManageSocketMethod["execution"],
-	option: 
+	execution: ManageSocketMethod["execution"]
 }
 
 export type manageSocketConnectionReturn = {
 	input: ManageSocketMethod["execution"]
-	result: ManageSocketMethod["result"]
+	result: ManageSocketMethod["result"] | Promise<net.Socket>
 	status: Status
-} | Promise<>
+	type: "sync" | "async"
+}
 
 export interface Port {
 

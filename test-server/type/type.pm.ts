@@ -2,6 +2,12 @@ import { ProcessData, ProcessRole } from "./type.process"
 
 export type ProcessQueueUnit = Omit<Process, "status">
 
+
+export const functionCode = {
+	"sub process management class": 1,
+	"port management class": 2
+} 
+
 export type Process = {
 	role: ProcessRole,
 	version: number,

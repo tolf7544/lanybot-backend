@@ -6,7 +6,7 @@ import { PortError, portError } from "../type/type.error";
 import { portLogger } from "./log";
 
 
-export class port implements Port {
+export class portManager implements Port {
     configPath = __dirname.replace("util","config/")+"port.json";
     info: PortConfig;
     maximumPort: number = 65535;
