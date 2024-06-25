@@ -7,6 +7,7 @@ import { portLogger } from "./log";
 
 
 export class portManager implements Port {
+    InitalCode: 1;
     configPath = __dirname.replace("util","config/")+"port.json";
     info: PortConfig;
     maximumPort: number = 65535;

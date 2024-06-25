@@ -1,3 +1,5 @@
+import { portManager } from "../util/port"
+import { manageSocketConnectionParams, manageSocketConnectionReturn } from "./type.port"
 import { ProcessData, ProcessRole } from "./type.process"
 
 export type ProcessQueueUnit = Omit<Process, "status">
@@ -29,23 +31,35 @@ export interface ProcessNet {
 	processData: ProcessData,
 	/**
 	 * 
-	 * connect management process
+	 * set port config data and get useable port. 
 	 * 
-	 * receive ok sign( receiveSoketEvent() ) from pm process & program start
 	 */
-	connectManagementProcess(): void,
+	portSetting: portManager,
 	/**
 	 * 
-	 * connect another sub process & use connection socket object at callback function.
+	 * manage socket connection / integrity / connection check
 	 * 
 	 */
-	connectSubProcess(run: CallableFunction): void,
+	manageSocketConnection({ execution }: manageSocketConnectionParams): manageSocketConnectionReturn,
 	/**
 	 * 
-	 * create connection base when sub process need connection this process.
+	 * connect management process. (not connect another sub process. only management process.)
 	 * 
 	 */
-	createServer(): void,
-	//private receiveSoketEvent():void
-	//private registerRequest(client: net.Socket,processData:ProcessData):"success" | undefined
+	connectManagementProcess(run: CallableFunction): void
+
+	/**
+	 *  hide private function 
+	 * 
+	 *  < socket connection management function > 
+	 * 1. connectSocket
+	 * : connection another process. when success call resolve and failed call reject. (promise)
+	 * 
+	 *  < connection management process >
+	 * 1. receiveSoketEvent
+	 * 2. registerRequest
+	 * 3. processErrorEvent
+	 * : catch unexpected process error. 
+	 * 
+	*/
 } 

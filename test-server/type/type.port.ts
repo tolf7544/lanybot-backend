@@ -1,8 +1,11 @@
 import { PortError } from './type.error';
-import { Heartbeat, PortConfig, ProcessData } from './type.process';
+import { Heartbeat, PortConfig, ProcessData, ProcessMessage } from './type.process';
 import { Status } from './type.util';
 import net from 'net';
+import { InitalCode } from './type.code';
 
+
+/** management another process socket(not management process) */
 type ManageSocketConnect = {
 	execution: "connect",
 	result: net.Socket | PortError
@@ -37,8 +40,44 @@ export type manageSocketConnectionReturn = {
 	type: "sync" | "async"
 }
 
-export interface Port {
+/** management master process socket(not control sub process) */
 
+type CheckMasterSocketConnection = {
+	execution: "master-check-connection",
+	result: boolean | PortError
+}
+
+type ManageMasterSocketAction<T> = {
+	execution: "master-data-request",
+	header: ProcessMessage["type"],
+	body: unknown,
+	result: T | PortError,
+}
+
+type RequestMasterHeartbeat = {
+	execution: "master-check-socket-integrity",
+	result: number[] | PortError,
+}
+
+type ManageMasterSocketMethod<T> = CheckMasterSocketConnection |
+ManageMasterSocketAction<T> |
+RequestMasterHeartbeat
+
+/** default status is pending */
+export type manageMasterSocketConnectionReturn<T> = {
+	input: ManageMasterSocketMethod<never>["execution"]
+	
+	result: Promise<ManageMasterSocketMethod<T>["result"]>
+	status: Status
+	type: "sync" | "async"
+}
+
+export type manageMasterSocketConnectionParams = {
+	execution: ManageMasterSocketMethod["execution"]
+}
+
+export interface Port {
+	InitalCode: InitalCode["Port"]
 	configPath: string;
 	info: PortConfig;
 	maximumPort: number;

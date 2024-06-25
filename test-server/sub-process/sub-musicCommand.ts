@@ -3,7 +3,7 @@ import { subProcess } from "./sub-process";
 
 function main() {
 	const process = new subProcess(ProcessRole.musicCommand);
-	process.connectManagementProcess(); 
+	process.connectManagementProcess();
 }
 
 main();

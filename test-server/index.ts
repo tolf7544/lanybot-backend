@@ -33,6 +33,8 @@ function receiveSoketEvent(connection: net.Socket, data:Buffer) {
 	const message:ProcessMessage = JSON.parse(data.toString());
 	if(message.type == "register-request") {
 		return receiveRegister(connection,message);
+	} else if() {
+
 	}
 
 	// if(message.type == "heartbeat") {

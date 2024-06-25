@@ -1,10 +1,11 @@
 import { pm } from "..";
-import { Process, Status } from "../type/type.pm";
+import { Process } from "../type/type.pm";
 import { ProcessRole, ProcessMessage, ProcessRegister } from "../type/type.process";
 import { processLogger } from "../util/log";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
 import {code,number}  from "../config/version.json";
+import { Status } from "../type/type.util";
 
 export function receiveRegister(connection:net.Socket,message: ProcessRegister) {
 	debugLog("process [role:"+message.role+"] ")
@@ -43,7 +44,7 @@ function register(message: ProcessRegister):{port?: number,status: Status} {
 		if(process.length >= 2) {
 			processLogger(__filename,{role: ProcessRole.processManagement, message: "active process is more than 2. waiting for finish legacy process."})
 			return {
-				status: "canceled"
+				status: "cancel"
 			};
 		} else {
 			const temp = [];

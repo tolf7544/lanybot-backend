@@ -1,4 +1,4 @@
-import { ProcessData, ProcessMessage, ProcessRole } from "../type/type.process";
+import { ProcessData, ProcessMessage, ProcessRegister, ProcessRole } from "../type/type.process";
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
@@ -96,7 +96,7 @@ export class subProcess implements ProcessNet {
         }
     }
 
-    connectSocket() {
+    private connectSocket() {
         return new Promise((resolve: (value: net.Socket) => void,reject: (error: PortError) => void) => {
             this.portSetting.getPortNumber().then((portNumber) => {
                 this.processData.client = net.createConnection({ port: portNumber }, () => {
@@ -106,11 +106,12 @@ export class subProcess implements ProcessNet {
             }).catch((error:PortError) => {
                 reject(error);
             })
-            
-
         })
     }
     /**  */
+    manageMasterSocket({execute}:) {
+
+    }
 
     connectManagementProcess() {
         this.processData.client = net.createConnection({ port: port.default }, () => {
@@ -126,16 +127,6 @@ export class subProcess implements ProcessNet {
         this.processData.client.on('end', () => {
             console.log('disconnected from server');
         });
-    }
-
-    connectSubProcess(run: CallableFunction) {
-        net.createConnection({ port: port.default }, () => {
-            run(this.processData.client);
-        })
-    }
-
-    createServer() {
-        
     }
 
     private receiveSoketEvent(data: Buffer) {
@@ -159,13 +150,17 @@ export class subProcess implements ProcessNet {
             debugLog("pass management process registering.")
             return "success";
         }
-        debugLog("send register to management process")
-        // client.write(JSON.stringify({
-        //     type: "register-request",
-        //     time: TodayDate(),
-        //     pid: process.pid,
-        //     role: processData.role,
-        // } as ProcessRegister))
+        debugLog("send register to management process");
+
+        /** this private function is called at connectManagementProcess().
+         *  parent function is checked this client params is exist.
+         *  so this case define [net.socket] using "as". */
+        (processData.client as net.Socket).write(JSON.stringify({
+            type: "register-request",
+            time: TodayDate(),
+            pid: process.pid,
+            role: processData.role,
+        } as ProcessRegister))
     }
 
     private processErrorEvent() {
