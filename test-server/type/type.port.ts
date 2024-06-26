@@ -73,7 +73,7 @@ export type manageMasterSocketConnectionReturn<T> = {
 }
 
 export type manageMasterSocketConnectionParams = {
-	execution: ManageMasterSocketMethod["execution"]
+	execution: ManageMasterSocketMethod<never>["execution"]
 }
 
 export interface Port {
