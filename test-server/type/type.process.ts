@@ -10,7 +10,7 @@ export type musicIPCdataFormat = {
 
 // test type
 
-export type ProcessData = {
+export interface ProcessData {
 	role: ProcessRole,
 	active: boolean,
 	client: net.Socket | undefined,
@@ -29,7 +29,15 @@ export enum ProcessRole { // 서비스 역할 코드
 	"securitySpam" = "0004",
 }
 
-export type ProcessMessage = Heartbeat | ProcessRegister | ExchangeProcessData
+export type ProcessMessage = Heartbeat | ProcessRegister | ExchangeProcessData | ProcessRequest
+
+export interface ProcessMessageFormat {
+	time: string,
+	pid: number,
+	role: ProcessRole,
+	state: Status,
+	message: string,
+}
 
 export type Heartbeat = {
 	type: "heartbeat",
@@ -38,22 +46,28 @@ export type Heartbeat = {
 	checkPoint: Array<number>
 }
 
-export type ProcessRegister = {
+interface ProcessStatus extends Omit<ProcessData, "client"> {
+	isSingleProcessBlock: number
+	version: {
+		number: number
+		UpdateCount: number
+	}
+	isNeedRestart: boolean
+
+}
+
+export interface ProcessRequest extends ProcessMessageFormat {
+	type: "process-data-request" | "process-data-response",
+	process: ProcessStatus
+}
+
+export interface ProcessRegister extends ProcessMessageFormat {
 	type: "register-request" | "register-response",
-	time: string,
-	pid: number,
-	role: ProcessRole,
-	state: Status,
-	message: string,
 	port: number
 }
 
-export type ExchangeProcessData = {
+export interface ExchangeProcessData extends ProcessMessageFormat {
 	type: "data-request" | "data-response",
-	time: string,
-	pid: number,
-	role: ProcessRole,
-	state: Status,
 	userList: string,
 }
 

@@ -6,9 +6,9 @@ export type ProcessQueueUnit = Omit<Process, "status">
 
 
 export const functionCode = {
-	"sub process management class": 1,
-	"port management class": 2
-} 
+	"sub process Management class": 1,
+	"port Management class": 2
+}
 
 export type Process = {
 	role: ProcessRole,
@@ -43,19 +43,19 @@ export interface ProcessNet {
 	manageSocketConnection({ execution }: manageSocketConnectionParams): manageSocketConnectionReturn,
 	/**
 	 * 
-	 * connect management process. (not connect another sub process. only management process.)
+	 * connect Master process. (not connect another sub process. only Master process.)
 	 * 
 	 */
-	connectManagementProcess(run: CallableFunction): void
+	connectMasterProcess(run: CallableFunction): void
 
 	/**
 	 *  hide private function 
 	 * 
-	 *  < socket connection management function > 
+	 *  < socket connection Master function > 
 	 * 1. connectSocket
 	 * : connection another process. when success call resolve and failed call reject. (promise)
 	 * 
-	 *  < connection management process >
+	 *  < connection Master process >
 	 * 1. receiveSoketEvent
 	 * 2. registerRequest
 	 * 3. processErrorEvent

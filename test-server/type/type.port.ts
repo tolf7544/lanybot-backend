@@ -26,8 +26,8 @@ type ManageSocketHeartbeat = {
 }
 
 type ManageSocketMethod = ManageSocketConnect |
-ManageSocketCheckConnection |
-ManageSocketHeartbeat
+	ManageSocketCheckConnection |
+	ManageSocketHeartbeat
 
 export type manageSocketConnectionParams = {
 	execution: ManageSocketMethod["execution"]
@@ -47,11 +47,11 @@ type CheckMasterSocketConnection = {
 	result: boolean | PortError
 }
 
-type ManageMasterSocketAction<T> = {
+type ManageMasterSocketAction = {
 	execution: "master-data-request",
 	header: ProcessMessage["type"],
 	body: unknown,
-	result: T | PortError,
+	result: ProcessMessage | PortError,
 }
 
 type RequestMasterHeartbeat = {
@@ -59,21 +59,21 @@ type RequestMasterHeartbeat = {
 	result: number[] | PortError,
 }
 
-type ManageMasterSocketMethod<T> = CheckMasterSocketConnection |
-ManageMasterSocketAction<T> |
-RequestMasterHeartbeat
+type ManageMasterSocketMethod = CheckMasterSocketConnection |
+	ManageMasterSocketAction |
+	RequestMasterHeartbeat
 
 /** default status is pending */
-export type manageMasterSocketConnectionReturn<T> = {
-	input: ManageMasterSocketMethod<never>["execution"]
-	
-	result: Promise<ManageMasterSocketMethod<T>["result"]>
+export type ManageMasterSocketConnectionReturn = {
+	input: ManageMasterSocketMethod["execution"]
+
+	result: Promise<ManageMasterSocketMethod["result"]>
 	status: Status
 	type: "sync" | "async"
 }
 
-export type manageMasterSocketConnectionParams = {
-	execution: ManageMasterSocketMethod<never>["execution"]
+export type ManageMasterSocketConnectionParams = {
+	execution: ManageMasterSocketMethod["execution"]
 }
 
 export interface Port {
