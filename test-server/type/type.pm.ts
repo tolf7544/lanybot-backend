@@ -6,8 +6,8 @@ export type ProcessQueueUnit = Omit<Process, "status">
 
 
 export const functionCode = {
-	"sub process Management class": 1,
-	"port Management class": 2
+	"sub process management class": 1,
+	"port management class": 2
 }
 
 export type Process = {
