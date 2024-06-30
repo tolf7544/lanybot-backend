@@ -1,4 +1,4 @@
-import { ProcessMessage, ProcessRole } from "../type/type.process";
+import { ProcessMessage, ProcessRoleCode } from "../type/type.process";
 import net from "net";
 
 export function TodayDate() {
@@ -7,7 +7,7 @@ export function TodayDate() {
 }
 
 
-export function heartBeat(client:net.Socket,role:ProcessRole) {
+export function heartBeat(client:net.Socket,role:ProcessRoleCode) {
 	setInterval(() => {
 		client.write(
 			JSON.stringify(

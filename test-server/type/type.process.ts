@@ -11,30 +11,36 @@ export type musicIPCdataFormat = {
 // test type
 
 export interface ProcessData {
-	role: ProcessRole,
+	role: ProcessRoleCode,
 	active: boolean,
 	client: net.Socket | undefined,
 	notRegisterProcess: boolean, // 중앙 버전 관리 프로세스를 이용하지 않음 ( 단독 및 특별한 케이스 )
 	legacyUser: Set<string>,
-	port: number
+	port: number,
+	registerPatient: number,
+	maximumPatient:number, // default: 10
 }
 
 export type ClientData = Set<string>;
 
-export enum ProcessRole { // 서비스 역할 코드
-	"processManagement" = "0000",
-	"musicCommand" = "0001",
-	"musicDatabase" = "0002",
-	"musicStream" = "0003",
-	"securitySpam" = "0004",
-}
+export const processRole = { // 서비스 역할 코드
+	"processManagement": "0000",
+	"musicCommand": "0001",
+	"musicDatabase": "0002",
+	"musicStream": "0003",
+	"securitySpam": "0004",
+} as const
+const processRoleValue = Object.values(processRole)
+const processRoleKey = Object.keys(processRole)[0] as keyof typeof processRole
+export type ProcessRoleCode = typeof processRoleValue[0];
+export type ProcessRoleName = typeof processRoleKey;
 
 export type ProcessMessage = Heartbeat | ProcessRegister | ExchangeProcessData | ProcessRequest
 
 export interface ProcessMessageFormat {
 	time: string,
 	pid: number,
-	role: ProcessRole,
+	role: ProcessRoleCode,
 	state: Status,
 	message: string,
 }
@@ -42,7 +48,7 @@ export interface ProcessMessageFormat {
 export type Heartbeat = {
 	type: "heartbeat",
 	time: string,
-	role: ProcessRole,
+	role: ProcessRoleCode,
 	checkPoint: Array<number>
 }
 

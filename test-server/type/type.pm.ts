@@ -1,6 +1,6 @@
 import { portManager } from "../util/port"
-import { manageSocketConnectionParams, manageSocketConnectionReturn } from "./type.port"
-import { ProcessData, ProcessRole } from "./type.process"
+import { ManageMainSocketConnectionParams, ManageMainSocketConnectionReturn} from "./type.port"
+import { ProcessData, ProcessRoleCode } from "./type.process"
 
 export type ProcessQueueUnit = Omit<Process, "status">
 
@@ -11,14 +11,14 @@ export const functionCode = {
 }
 
 export type Process = {
-	role: ProcessRole,
+	role: ProcessRoleCode,
 	version: number,
 	port: number,
 	status: "previous" | "active" | "loading",
 }
 
 export type Log = {
-	role: ProcessRole,
+	role: ProcessRoleCode,
 	message: string
 }
 
@@ -37,25 +37,24 @@ export interface SubProcess {
 	portSetting: portManager,
 	/**
 	 * 
+	 * manage main socket connection (connect, check integrity, data request) 
+	 * 
+	 */
+	manageMainSocket({execution}:ManageMainSocketConnectionParams):ManageMainSocketConnectionReturn,
+	/**
+	 * 
 	 * manage socket connection / integrity / connection check
 	 * 
 	 */
-	manageSocketConnection({ execution }: manageSocketConnectionParams): manageSocketConnectionReturn,
-	/**
-	 * 
-	 * connect Master process. (not connect another sub process. only Master process.)
-	 * 
-	 */
-	connectMasterProcess(run: CallableFunction): void
 
 	/**
 	 *  hide private function 
 	 * 
-	 *  < socket connection Master function > 
+	 *  < socket connection Main function > 
 	 * 1. connectSocket
 	 * : connection another process. when success call resolve and failed call reject. (promise)
 	 * 
-	 *  < connection Master process >
+	 *  < connection Main process >
 	 * 1. receiveSoketEvent
 	 * 2. registerRequest
 	 * 3. processErrorEvent

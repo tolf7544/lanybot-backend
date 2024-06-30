@@ -1,18 +1,19 @@
-import { ProcessData, ProcessMessage, ProcessRegister, ProcessRole } from "../type/type.process";
+import { ProcessData, ProcessMessage, ProcessRegister, ProcessRoleCode } from "../type/type.process";
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
 import { SubProcess, functionCode } from "../type/type.pm";
-import { PortError, PortMessage } from "../type/type.error";
+import { PortError, PortMessage, portError } from '../type/type.error';
 import { ManageMainSocketConnectionParams, ManageMainSocketConnectionReturn, manageSocketConnectionParams, manageSocketConnectionReturn } from '../type/type.port';
 import { portManager } from "../util/port";
+import { processLogger } from "../util/log";
 
 
 export class subProcess implements SubProcess {
     processData: ProcessData;
     portSetting: portManager;
 
-    constructor(role: ProcessRole, notRegisterProcess?: boolean) {
+    constructor(role: ProcessRoleCode, notRegisterProcess?: boolean) {
         if (!notRegisterProcess) {
             notRegisterProcess = false;
         }
@@ -23,7 +24,9 @@ export class subProcess implements SubProcess {
             notRegisterProcess: notRegisterProcess,
             legacyUser: new Set(),
             port: 0,
-            client: undefined
+            client: undefined,
+            registerPatient: 0,
+            maximumPatient: 10
         }
 
         this.portSetting = new portManager(this.processData);
@@ -111,25 +114,34 @@ export class subProcess implements SubProcess {
     }
     /**  */
     manageMainSocket({execution}:ManageMainSocketConnectionParams):ManageMainSocketConnectionReturn {
-        if(execution == "Main-check-connection") {
-            
+        if(execution == "Main-check-connection") { // main process 단일 확인 메서드
+
+        } else if( execution == "Main-check-socket-integrity") {  // main process에서 시작되며 요청된 해당 서비스 전반을 확인하는 메서드
+
+        } else if (execution == "Main-data-request") {
+
+        } else { //Main-register-process
+            this.registerManagementProcess()
         }
     }
 
-    connectManagementProcess() {
-        this.processData.client = net.createConnection({ port: port.default }, () => {
-            const result = this.registerRequest(this.processData);
+    private registerManagementProcess() {
+        return new Promise((resolve:(value: unknown) => void, reject:(error: portError) => void) => {
+            this.processData.client = net.createConnection({ port: port.default }, () => {
+                const result = this.registerRequest(this.processData);
+    
+                if (result) {
+                    debugLog("process active. [ignore management process]")
+                    this.processData.active = true;
+                }
+            });
+    
+            this.processData.client.on('data', (data) => this.receiveSoketEvent(data));
+            this.processData.client.on('end', () => {
+                console.log('disconnected from server');
+            });
+        }) 
 
-            if (result == "success") {
-                debugLog("process active. [ignore management process]")
-                this.processData.active = true;
-            }
-        });
-
-        this.processData.client.on('data', (data) => this.receiveSoketEvent(data));
-        this.processData.client.on('end', () => {
-            console.log('disconnected from server');
-        });
     }
 
     private receiveSoketEvent(data: Buffer) {
@@ -139,19 +151,34 @@ export class subProcess implements SubProcess {
             if (message.state == "success") {
                 debugLog("process active. [received ok sign from management process2]")
                 this.processData.active = true;
+                this.processData.registerPatient = 0;
             } else {
+                if(this.processData.registerPatient == this.processData.maximumPatient) {
+                    processLogger(__filename, {
+                        role: this.processData.role,
+                        message: ""
+                    })
+                    return false
+                }
+
                 setTimeout(() => {
                     debugLog("retry register request.")
+                    this.processData.registerPatient += 1;
                     return this.registerRequest(this.processData);
                 }, 1000 * 10);
             }
         }
     }
-
+    /**
+     * 
+     * @param processData {ProcessData}
+     * @returns [ boolean(true) ] 프로세스 등록 절차 무시 후 서비스 개시
+     * @returns [ null ] 등록 요청 전송. 보류 상태 뜻함
+     */
     private registerRequest(processData: ProcessData) {
         if (processData.notRegisterProcess == true) {
             debugLog("pass management process registering.")
-            return "success";
+            return true;
         }
         debugLog("send register to management process");
 
@@ -163,7 +190,9 @@ export class subProcess implements SubProcess {
             time: TodayDate(),
             pid: process.pid,
             role: processData.role,
-        } as ProcessRegister))
+        } as ProcessRegister));
+
+        return null;
     }
 
     private processErrorEvent() {

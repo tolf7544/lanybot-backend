@@ -1,12 +1,14 @@
 import { ProcessData, ProcessRole } from "./type/type.process";
-import { port } from "./util/port";
-
+import { portManager } from "./util/port";
 const testProcessData:ProcessData = {
 	role: ProcessRole.musicDatabase,
 	active: false,
 	notRegisterProcess: false,
 	legacyUser: new Set(),
 	port: 0,
+	client: undefined,
+	registerPatient: 0,
+	maximumPatient: 0
 }
 
 function testDebug(message: unknown) {
@@ -14,7 +16,7 @@ function testDebug(message: unknown) {
 }
 
 function main() {
-    const portSetting = new port(testProcessData);
+    const portSetting = new portManager(testProcessData);
 
 	portSetting.getPortNumber().then((value) => {
 		//testDebug(JSON.stringify(value))

@@ -42,6 +42,11 @@ export type manageSocketConnectionReturn = {
 
 /** management Main process socket(not control sub process) */
 
+type RegisterMainSocketConnection = {
+	execution: "Main-register-process",
+	result: boolean | PortError
+}
+
 type CheckMainSocketConnection = {
 	execution: "Main-check-connection",
 	result: boolean | PortError
@@ -61,7 +66,8 @@ type RequestMainHeartbeat = {
 
 type ManageMainSocketMethod = CheckMainSocketConnection |
 ManageMainSocketAction |
-RequestMainHeartbeat
+RequestMainHeartbeat |
+RegisterMainSocketConnection
 
 /** default status is pending */
 export type ManageMainSocketConnectionReturn = {
