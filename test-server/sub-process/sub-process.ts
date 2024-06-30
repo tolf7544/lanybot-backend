@@ -2,13 +2,13 @@ import { ProcessData, ProcessMessage, ProcessRegister, ProcessRole } from "../ty
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
-import { ProcessNet, functionCode } from "../type/type.pm";
+import { SubProcess, functionCode } from "../type/type.pm";
 import { PortError, PortMessage } from "../type/type.error";
-import { ManageMasterSocketConnectionParams, ManageMasterSocketConnectionReturn, manageSocketConnectionParams, manageSocketConnectionReturn } from "../type/type.port";
+import { ManageMainSocketConnectionParams, ManageMainSocketConnectionReturn, manageSocketConnectionParams, manageSocketConnectionReturn } from '../type/type.port';
 import { portManager } from "../util/port";
 
 
-export class subProcess implements ProcessNet {
+export class subProcess implements SubProcess {
     processData: ProcessData;
     portSetting: portManager;
 
@@ -27,7 +27,7 @@ export class subProcess implements ProcessNet {
         }
 
         this.portSetting = new portManager(this.processData);
-
+        
         this.processErrorEvent()
     }
 
@@ -39,7 +39,7 @@ export class subProcess implements ProcessNet {
         }
     }
 
-
+    
     /** socket connection management function */
 
     manageSocketConnection({ execution }: manageSocketConnectionParams): manageSocketConnectionReturn {
@@ -91,38 +91,37 @@ export class subProcess implements ProcessNet {
                     type: "heartbeat",
                     time: TodayDate(),
                     role: this.processData.role,
-                    checkPoint: [functionCode["port Management class"]]
+                    checkPoint: [functionCode["port management class"]]
                 }
             }
         }
     }
 
     private connectSocket() {
-        return new Promise((resolve: (value: net.Socket) => void, reject: (error: PortError) => void) => {
+        return new Promise((resolve: (value: net.Socket) => void,reject: (error: PortError) => void) => {
             this.portSetting.getPortNumber().then((portNumber) => {
                 this.processData.client = net.createConnection({ port: portNumber }, () => {
                     // this.processData.client == net.Socket (createConnection 실행 후 net.Socket 리턴 되며 해당 리턴 값을 resolve의 인자값으로 넘김)
                     resolve(this.processData.client as net.Socket);
                 })
-            }).catch((error: PortError) => {
+            }).catch((error:PortError) => {
                 reject(error);
             })
         })
     }
     /**  */
-
-    manageMasterSocket({ execution }: ManageMasterSocketConnectionParams): ManageMasterSocketConnectionReturn {
-        if (execution == "master-check-connection") {
-
+    manageMainSocket({execution}:ManageMainSocketConnectionParams):ManageMainSocketConnectionReturn {
+        if(execution == "Main-check-connection") {
+            
         }
     }
 
-    connectMasterProcess() {
+    connectManagementProcess() {
         this.processData.client = net.createConnection({ port: port.default }, () => {
             const result = this.registerRequest(this.processData);
 
             if (result == "success") {
-                debugLog("process active. [ignore Master process]")
+                debugLog("process active. [ignore management process]")
                 this.processData.active = true;
             }
         });
@@ -138,7 +137,7 @@ export class subProcess implements ProcessNet {
 
         if (message.type == "register-response") {
             if (message.state == "success") {
-                debugLog("process active. [received ok sign from Master process2]")
+                debugLog("process active. [received ok sign from management process2]")
                 this.processData.active = true;
             } else {
                 setTimeout(() => {
@@ -151,12 +150,12 @@ export class subProcess implements ProcessNet {
 
     private registerRequest(processData: ProcessData) {
         if (processData.notRegisterProcess == true) {
-            debugLog("pass Master process registering.")
+            debugLog("pass management process registering.")
             return "success";
         }
-        debugLog("send register to Master process");
+        debugLog("send register to management process");
 
-        /** this private function is called at connectMasterProcess().
+        /** this private function is called at connectManagementProcess().
          *  parent function is checked this client params is exist.
          *  so this case define [net.socket] using "as". */
         (processData.client as net.Socket).write(JSON.stringify({

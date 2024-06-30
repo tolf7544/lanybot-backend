@@ -22,7 +22,7 @@ export type Log = {
 	message: string
 }
 
-export interface ProcessNet {
+export interface SubProcess {
 	/**
 	 * 
 	 * process information
