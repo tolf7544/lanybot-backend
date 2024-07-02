@@ -40,7 +40,7 @@ export interface SubProcess {
 	 * manage main socket connection (connect, check integrity, data request) 
 	 * 
 	 */
-	manageMainSocket({execution}:ManageMainSocketConnectionParams):ManageMainSocketConnectionReturn,
+	manageMainSocket({ execution }: ManageMainSocketConnectionParams): Promise<ManageMainSocketConnectionReturn> | ManageMainSocketConnectionReturn,
 	/**
 	 * 
 	 * manage socket connection / integrity / connection check

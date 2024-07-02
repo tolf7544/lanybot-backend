@@ -1,4 +1,4 @@
-import { PortError } from './type.error';
+import { PMError, PortError } from './type.error';
 import { Heartbeat, PortConfig, ProcessData, ProcessMessage } from './type.process';
 import { Status } from './type.util';
 import net from 'net';
@@ -44,24 +44,24 @@ export type manageSocketConnectionReturn = {
 
 type RegisterMainSocketConnection = {
 	execution: "Main-register-process",
-	result: boolean | PortError
+	result: boolean | PMError
 }
 
 type CheckMainSocketConnection = {
 	execution: "Main-check-connection",
-	result: boolean | PortError
+	result: boolean | PMError
 }
 
 type ManageMainSocketAction = {
 	execution: "Main-data-request",
 	header: ProcessMessage["type"],
 	body: unknown,
-	result: ProcessMessage | PortError,
+	result: ProcessMessage | PMError,
 }
 
 type RequestMainHeartbeat = {
 	execution: "Main-check-socket-integrity",
-	result: number[] | PortError,
+	result: number[] | PMError,
 }
 
 type ManageMainSocketMethod = CheckMainSocketConnection |
@@ -72,8 +72,7 @@ RegisterMainSocketConnection
 /** default status is pending */
 export type ManageMainSocketConnectionReturn = {
 	input: ManageMainSocketMethod["execution"]
-	
-	result: Promise<ManageMainSocketMethod["result"]>
+	result: ManageMainSocketMethod["result"]
 	status: Status
 	type: "sync" | "async"
 }
