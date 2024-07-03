@@ -8,12 +8,15 @@
 export const portError = {
 	"0001": "[ port.port.'get data()' ] fs.readFileSync error occured",
 	"0002": "[ port.port.isUsingPort() ] already using port. try next port...",
-	"0003": "[ port.port.portLoopCheck() ] all port is not useable. try again later."
+	"0003": "[ port.port.portLoopCheck() ] all port is not useable. try again later.",
+	"0004": "[ port.port.manageSocketConnection() ] this command need option data.",
 } as const
 
 
 export const subProcessError = {
-	"0021": "[ sub-process.subProcess.registerManagementProcess() ] register request number is over than processData.registerPatient"
+	"0011": "[ sub-process.subProcess.registerManagementProcess() ] register request number is over than processData.registerPatient",
+	"0012": "[ sub-process.subProcess.clientProcess() ] this.processData.client need reconnecting."
+
 }
 
 export type PortError = keyof typeof portError;

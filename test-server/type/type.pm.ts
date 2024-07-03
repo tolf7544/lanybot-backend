@@ -28,7 +28,7 @@ export interface SubProcess {
 	 * process information
 	 * 
 	 */
-	processData: ProcessData,
+	process: ProcessData,
 	/**
 	 * 
 	 * set port config data and get useable port. 

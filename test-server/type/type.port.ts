@@ -30,7 +30,10 @@ type ManageSocketMethod = ManageSocketConnect |
 	ManageSocketHeartbeat
 
 export type manageSocketConnectionParams = {
-	execution: ManageSocketMethod["execution"]
+	execution: ManageSocketMethod["execution"],
+	option?: {
+		targetPort?: number,
+	}
 }
 
 export type manageSocketConnectionReturn = {
