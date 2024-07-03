@@ -89,7 +89,7 @@ export class subProcess implements SubProcess {
                 return {
                     input: execution,
                     status: "pending",
-                    result: this.connectServer(),
+                    result: this.spawnServer(),
                     type: "async"
                 }
             }

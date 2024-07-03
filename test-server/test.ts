@@ -1,7 +1,7 @@
-import { ProcessData, ProcessRole } from "./type/type.process";
+import { ProcessData, processRole } from "./type/type.process";
 import { portManager } from "./util/port";
 const testProcessData:ProcessData = {
-	role: ProcessRole.musicDatabase,
+	role: processRole.musicDatabase,
 	active: false,
 	notRegisterProcess: false,
 	legacyUser: new Set(),
