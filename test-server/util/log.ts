@@ -1,4 +1,4 @@
-import { Log } from "../type/type.pm";
+import { JsonLog, Log, LogOption, PortLogObject } from "../type/type.pm";
 import fs from 'fs';
 import version from "../config/version.json";
 import { debugLog } from "./util";
@@ -17,6 +17,28 @@ export function logSetting() {
 		
 	}
 }
+
+export function simpleJsonLogger(file_name: string, option: LogOption, info?: JsonLog<PortLogObject>) {
+	const date = new Date().getTime();
+	const result = logSetting();
+	if(result == false || info == undefined) {
+		return;
+	}
+
+	if(option.execute == "save") {
+		const saveObject = {
+			date: date,
+			fileName: file_name,
+			data: info.object
+		}
+		fs.writeFileSync(`../log/port.${info.role}.txt`,`${JSON.stringify(saveObject)},`, {flag:"w"})
+	} else {
+		const JsonString = fs.readFileSync(`../log/port.${info.role}.txt`, "utf-8")
+		return JSON.parse(`[${JsonString.slice(0,JsonString.length-1)}]`)
+	}
+}
+
+
 
 export function portLogger(file_name: string,info: Log) {
 	const date = new Date().getTime();

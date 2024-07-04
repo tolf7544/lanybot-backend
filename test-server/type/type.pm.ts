@@ -1,6 +1,6 @@
 import { portManager } from "../util/port"
-import { ManageMainSocketConnectionParams, ManageMainSocketConnectionReturn} from "./type.port"
 import { ProcessData, ProcessRoleCode } from "./type.process"
+import { Status } from "./type.util"
 
 export type ProcessQueueUnit = Omit<Process, "status">
 
@@ -17,10 +17,26 @@ export type Process = {
 	status: "previous" | "active" | "loading",
 }
 
+/** log type */
 export type Log = {
 	role: ProcessRoleCode,
 	message: string
 }
+
+export type LogOption = {
+	execute: "save" | "read"
+}
+
+export type JsonLog<T> = {
+	role: ProcessRoleCode,
+	object?: T
+}
+
+export type PortLogObject = {
+	port: number,
+	status: Status
+}
+/**  */
 
 export interface SubProcess {
 	/**
