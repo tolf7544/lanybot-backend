@@ -1,9 +1,9 @@
-import { JsonLog, Log, LogOption, PortLogObject } from "../type/type.pm";
+import { JsonLog, JsonLogParams, Log, LogOption, PortLogDataType } from "../type/type.pm";
 import fs from 'fs';
 import version from "../config/version.json";
 import { debugLog } from "./util";
 
-export function logSetting() {
+function logSetting() {
 	if(fs.existsSync("../log")) {
 		return true;
 	} else {
@@ -18,7 +18,8 @@ export function logSetting() {
 	}
 }
 
-export function simpleJsonLogger(file_name: string, option: LogOption, info?: JsonLog<PortLogObject>) {
+
+export function simpleJsonLogger(file_name: string, option: LogOption, info?: JsonLogParams<PortLogDataType>):JsonLog<PortLogDataType> | undefined {
 	const date = new Date().getTime();
 	const result = logSetting();
 	if(result == false || info == undefined) {
@@ -31,10 +32,10 @@ export function simpleJsonLogger(file_name: string, option: LogOption, info?: Js
 			fileName: file_name,
 			data: info.object
 		}
-		fs.writeFileSync(`../log/port.${info.role}.txt`,`${JSON.stringify(saveObject)},`, {flag:"w"})
+		fs.writeFileSync(`../log/${info.role}.txt`,`\n${JSON.stringify(saveObject)},`, {flag:"w"})
 	} else {
-		const JsonString = fs.readFileSync(`../log/port.${info.role}.txt`, "utf-8")
-		return JSON.parse(`[${JsonString.slice(0,JsonString.length-1)}]`)
+		const JsonString = fs.readFileSync(`../log/${info.role}.txt`, "utf-8")
+		return JSON.parse(`${JsonString.slice(0,JsonString.length-1)}`)
 	}
 }
 
@@ -47,7 +48,7 @@ export function portLogger(file_name: string,info: Log) {
 		return;
 	}
 
-	fs.appendFile("../log/port",`${date} [${info.role}] ${info.message} \n ${file_name}`, (() => {/** empty */}))
+	fs.appendFile("../log/port.txt",`\n${date} [${info.role}] [${file_name}] ${info.message}`, (() => {/** empty */}))
 }
 
 export function processLogger(file_name: string,info: Log) {
@@ -58,8 +59,9 @@ export function processLogger(file_name: string,info: Log) {
 	}
 
 	debugLog(`${date} [${info.role}] ${info.message} \n ${file_name}`)
-	fs.appendFile("../log/process",`${date} [${info.role}] ${info.message} \n ${file_name}`, (() => {/** empty */}))
+	fs.appendFile("../log/process.txt",`\n${date} [${info.role}] [${file_name}] ${info.message}`, (() => {/** empty */}))
 }
+
 
 export function heartbeatLogger(file_name: string, role: keyof typeof version.code) {
 	const date = new Date().getTime();
@@ -68,5 +70,5 @@ export function heartbeatLogger(file_name: string, role: keyof typeof version.co
 		return;
 	}
 
-	fs.appendFile("../log/status",`${role}${date} \n ${file_name}`, (() => {/** empty */}))
+	fs.appendFile("../log/status.txt",`\n[${role}] [${file_name}] ${date}`, (() => {/** empty */}))
 }

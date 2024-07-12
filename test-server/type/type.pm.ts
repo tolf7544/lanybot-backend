@@ -27,12 +27,18 @@ export type LogOption = {
 	execute: "save" | "read"
 }
 
-export type JsonLog<T> = {
-	role: ProcessRoleCode,
+export type JsonLogParams<T> = {
+	role: ProcessRoleCode | `${"port"}.${ProcessRoleCode}.${number}`,
 	object?: T
 }
 
-export type PortLogObject = {
+export type JsonLog<T> = {
+	date: number,
+	filename: string,
+	data: T
+}
+
+export type PortLogDataType = {
 	port: number,
 	status: Status
 }

@@ -2,11 +2,11 @@ import { ProcessData, ProcessMessage, ProcessRegister, ProcessRoleCode } from ".
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
-import { SubProcess, functionCode } from "../type/type.pm";
+import { JsonLog, PortLogDataType, SubProcess, functionCode } from "../type/type.pm";
 import { PortError, SubProcessError, subProcessError } from '../type/type.error';
 import { ManageMainSocketConnectionParams, ManageMainSocketConnectionReturn, manageSocketConnectionParams, manageSocketConnectionReturn } from '../type/type.port';
 import { portManager } from "../util/port";
-import { processLogger } from "../util/log";
+import { portLogger, processLogger, simpleJsonLogger } from "../util/log";
 import { Status } from "../type/type.util";
 
 
@@ -131,39 +131,41 @@ export class subProcess implements SubProcess {
         })
     }
     /** main socket connection management function */
-    // manageMainSocket({ execution }: ManageMainSocketConnectionParams): Promise<ManageMainSocketConnectionReturn> | ManageMainSocketConnectionReturn  {
-    //     return new Promise((resolve, reject: (error: ManageMainSocketConnectionReturn) => void) => {
-    //         if (execution == "Main-check-connection") { // main process 단일 확인 메서드
+    manageMainSocket({ execution }: ManageMainSocketConnectionParams): Promise<ManageMainSocketConnectionReturn> | ManageMainSocketConnectionReturn  {
+        return new Promise((resolve, reject: (error: ManageMainSocketConnectionReturn) => void) => {
+            if (execution == "Main-check-connection") { // main process 단일 확인 메서드
 
-    //         } else if (execution == "Main-check-socket-integrity") {  // main process에서 시작되며 요청된 해당 서비스 전반을 확인하는 메서드
+            } else if (execution == "Main-check-socket-integrity") {  // main process에서 시작되며 요청된 해당 서비스 전반을 확인하는 메서드
 
-    //         } else if (execution == "Main-data-request") {
+            } else if (execution == "Main-data-request") {
 
-    //         } else { //Main-register-process
-    //             this.registerManagementProcess().then(() => { //success
-    //                 resolve({
-    //                     input: "Main-register-process",
-    //                     result: true,
-    //                     status: "success",
-    //                     type: "async"
-    //                 })
-    //             }).catch((code: SubProcessError) => { // 0021
-    //                 processLogger(__filename, {
-    //                     role: this.process.role,
-    //                     message: subProcessError[code]
-    //                 })
-    //                 reject({
-    //                     input: "Main-register-process",
-    //                     result: false,
-    //                     status: "fail",
-    //                     type: "async"
-    //                 })
-    //             })
-    //         }
-    //     })
-    // }
+            } else { //Main-register-process
+                this.registerManagementProcess().then(() => { //success
+                    resolve({
+                        input: "Main-register-process",
+                        result: true,
+                        status: "success",
+                        type: "async"
+                    })
+                }).catch((code: SubProcessError) => { // 0021
+                    processLogger(__filename, {
+                        role: this.process.role,
+                        message: subProcessError[code]
+                    })
+                    reject({
+                        input: "Main-register-process",
+                        result: false,
+                        status: "fail",
+                        type: "async"
+                    })
+                })
+            }
+        })
+    }
     /** manageMainSocket Main-data-request */
-
+    private requestProcessBlockData() {
+        
+    }
 
     /** manageMainSocket Main-register-process */
     private registerManagementProcess() {
@@ -266,7 +268,24 @@ export class subProcess implements SubProcess {
 
     private processErrorEvent() {
         process.on("uncaughtException", (error) => {
-            debugLog(JSON.stringify(error))
+            if (error.name == "AggregateError") {
+                const portLog = simpleJsonLogger(
+                    __filename,
+                    {
+                        execute: "read"
+                    },
+                    {
+                        role: `port.${this.process.role}.${this.process.port}`,
+                    }
+                ) as JsonLog<PortLogDataType> 
+        
+                if(portLog.data.status == "start") { // port connecting is failed.
+                    portLogger(__filename, {
+                        role: this.process.role,
+                        message: `socket connection failed. [more info] ${JSON.stringify(portLog)}`
+                    })
+                }
+            }
         })
     }
 

@@ -48,10 +48,7 @@ export class portManager implements Port {
  
     isUsingPort(port: number): Promise<boolean> {
         return new Promise<boolean>((resolve:(value: boolean) => void,reject: (error: PortError) => void) => {
-            const server = net.createServer(socket => {
-                socket.write('Echo server\r\n');
-                socket.pipe(socket);
-            });
+            const server = net.createServer((/*socket*/) => { /** empty */});
         
             server.on('error', (err) => {
                 portLogger(__filename,{
