@@ -10,6 +10,7 @@ import { portLogger, processLogger, simpleJsonLogger } from "../util/log";
 import { Status } from "../type/type.util";
 
 
+
 export class subProcess implements SubProcess {
     process: ProcessData;
     portSetting: portManager;
@@ -110,9 +111,30 @@ export class subProcess implements SubProcess {
 
     private connectServer(port: number) {
         return new Promise((resolve: (value: net.Socket) => void, reject: (error: PortError) => void) => {
-
+            simpleJsonLogger(__filename,
+                {
+                    execute: "save"
+                },
+                {
+                    role: `port.${this.process.role}.${port}`,
+                    object: {
+                        port: port,
+                        status: "start"
+                    }
+                })
             const socket = net.createConnection({ timeout: 5000, port: port }, () => {
                 // this.process.client == net.Socket (createConnection 실행 후 net.Socket 리턴 되며 해당 리턴 값을 resolve의 인수값으로 넘김)
+                simpleJsonLogger(__filename,
+                    {
+                        execute: "save"
+                    },
+                    {
+                        role: `port.${this.process.role}.${port}`,
+                        object: {
+                            port: port,
+                            status: "success"
+                        }
+                    })
                 resolve(socket);
             })
         })
@@ -131,7 +153,7 @@ export class subProcess implements SubProcess {
         })
     }
     /** main socket connection management function */
-    manageMainSocket({ execution }: ManageMainSocketConnectionParams): Promise<ManageMainSocketConnectionReturn> | ManageMainSocketConnectionReturn  {
+    manageMainSocket({ execution }: ManageMainSocketConnectionParams): Promise<ManageMainSocketConnectionReturn> | ManageMainSocketConnectionReturn {
         return new Promise((resolve, reject: (error: ManageMainSocketConnectionReturn) => void) => {
             if (execution == "Main-check-connection") { // main process 단일 확인 메서드
 
@@ -164,7 +186,7 @@ export class subProcess implements SubProcess {
     }
     /** manageMainSocket Main-data-request */
     private requestProcessBlockData() {
-        
+
     }
 
     /** manageMainSocket Main-register-process */
@@ -277,9 +299,9 @@ export class subProcess implements SubProcess {
                     {
                         role: `port.${this.process.role}.${this.process.port}`,
                     }
-                ) as JsonLog<PortLogDataType> 
-        
-                if(portLog.data.status == "start") { // port connecting is failed.
+                ) as JsonLog<PortLogDataType>
+
+                if (portLog.data.status == "start") { // port connecting is failed.
                     portLogger(__filename, {
                         role: this.process.role,
                         message: `socket connection failed. [more info] ${JSON.stringify(portLog)}`

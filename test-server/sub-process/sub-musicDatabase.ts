@@ -55,9 +55,9 @@ process.on("uncaughtException", ((error) => {
             {
                 role: `port.${role}.${port}`,
             }
-        ) as JsonLog<PortLogDataType> 
+        ) as JsonLog<PortLogDataType>
 
-        if(portLog.data.status == "start") { // port connecting is failed.
+        if (portLog.data.status == "start") { // port connecting is failed.
             portLogger(__filename, {
                 role: role,
                 message: `socket connection failed. [more info] ${JSON.stringify(portLog)}`
