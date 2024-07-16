@@ -1,4 +1,4 @@
-import { ProcessData, ProcessMessage, ProcessRegister, ProcessRoleCode } from "../type/type.process";
+import { ProcessData, ProcessMessage, ProcessRegister, ProcessRequest, ProcessRoleCode } from "../type/type.process";
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
@@ -28,7 +28,8 @@ export class subProcess implements SubProcess {
             port: 0,
             client: undefined,
             registerPatient: 0,
-            maximumPatient: 10
+            maximumPatient: 10,
+            timeout: 2000
         }
 
         this.portSetting = new portManager(this.process);
@@ -110,7 +111,7 @@ export class subProcess implements SubProcess {
     }
 
     private connectServer(port: number) {
-        return new Promise((resolve: (value: net.Socket) => void, reject: (error: PortError) => void) => {
+        return new Promise((resolve: (value: net.Socket) => void) => {
             simpleJsonLogger(__filename,
                 {
                     execute: "save"
@@ -186,6 +187,37 @@ export class subProcess implements SubProcess {
     }
     /** manageMainSocket Main-data-request */
     private requestProcessBlockData() {
+        return new Promise((resolve, reject: (error: SubProcessError) => void) => {
+            this.connectServer(this.portSetting.info.default).then((_socket) => {
+                _socket.write(JSON.stringify({
+                    type: "process-data-request",
+                    time: TodayDate(),
+                    pid: process.pid,
+                    role: this.process.role,
+                    target: "process-information"
+                } as ProcessRequest));
+
+                this.requestProcessBlockDataReceiveSocketEvent(_socket);
+            })
+        })
+    }
+
+    private requestProcessBlockDataReceiveSocketEvent(socket: net.Socket): Promise<ProcessRequest> {
+        return new Promise((resolve, reject: (error: SubProcessError) => void) => {
+            setTimeout(() => {
+                reject("0013")
+            }, this.process.timeout);
+
+            socket.on("data", (data) => {
+                const message = JSON.parse(data.toString()) as ProcessMessage;
+
+                if(message.type == "process-data-request") {
+                    resolve(message);
+                } else {
+                    reject("0013")
+                }
+            })
+        })
 
     }
 
@@ -202,7 +234,7 @@ export class subProcess implements SubProcess {
             });
 
             mainProcessSocket.on('data', (data) => {
-                this.receiveSoketEvent(mainProcessSocket, data).then((result) => {  // pending / success
+                this.registerManagementProcessReceiveSoketEvent(mainProcessSocket, data).then((result) => {  // pending / success
                     if (result != "pending") {
                         resolve(result)
                     }
@@ -224,7 +256,7 @@ export class subProcess implements SubProcess {
      * reject( SubProcessError 0021 occured )
      * 
      */
-    private receiveSoketEvent(socket: net.Socket, data: Buffer): Promise<Status> {
+    private registerManagementProcessReceiveSoketEvent(socket: net.Socket, data: Buffer): Promise<Status> {
         return new Promise((resolve, reject: (error: SubProcessError) => void) => {
             const message = JSON.parse(data.toString()) as ProcessMessage;
 
@@ -310,6 +342,4 @@ export class subProcess implements SubProcess {
             }
         })
     }
-
-
 }

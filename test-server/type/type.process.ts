@@ -18,7 +18,8 @@ export interface ProcessData {
 	legacyUser: Set<string>,
 	port: number,
 	registerPatient: number,
-	maximumPatient:number, // default: 10
+	timeout: number
+	maximumPatient:number,// default: 10
 }
 
 export type ClientData = Set<string>;
@@ -64,7 +65,8 @@ interface ProcessStatus extends Omit<ProcessData, "client"> {
 
 export interface ProcessRequest extends ProcessMessageFormat {
 	type: "process-data-request" | "process-data-response",
-	process: ProcessStatus
+	process: ProcessStatus,
+	target: "process-information" | "process_blocks-integrity-information " 
 }
 
 export interface ProcessRegister extends ProcessMessageFormat {
@@ -73,7 +75,7 @@ export interface ProcessRegister extends ProcessMessageFormat {
 }
 
 export interface ExchangeProcessData extends ProcessMessageFormat {
-	type: "data-request" | "data-response",
+	type: "user-data-request" | "user-data-request",
 	userList: string,
 }
 
