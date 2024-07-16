@@ -111,7 +111,14 @@ export class subProcess implements SubProcess {
     }
 
     private connectServer(port: number) {
-        return new Promise((resolve: (value: net.Socket) => void) => {
+        return new Promise((resolve: (value: net.Socket) => void, reject: (err: SubProcessError) => void) => {
+            let isFinish = false;
+
+            setTimeout(() => {
+                if(isFinish) { return }
+                reject("0014")
+            }, this.process.timeout);
+
             simpleJsonLogger(__filename,
                 {
                     execute: "save"
@@ -136,6 +143,7 @@ export class subProcess implements SubProcess {
                             status: "success"
                         }
                     })
+                isFinish = true;
                 resolve(socket);
             })
         })
@@ -157,11 +165,51 @@ export class subProcess implements SubProcess {
     manageMainSocket({ execution }: ManageMainSocketConnectionParams): Promise<ManageMainSocketConnectionReturn> | ManageMainSocketConnectionReturn {
         return new Promise((resolve, reject: (error: ManageMainSocketConnectionReturn) => void) => {
             if (execution == "Main-check-connection") { // main process 단일 확인 메서드
-
+                this.checkMainPorcessConnection().then(() => {
+                    resolve({
+                        input: "Main-check-connection",
+                        result: true,
+                        status: "success",
+                        type: "async"
+                    })
+                }).catch((code: SubProcessError) => {
+                    processLogger(__filename, {
+                        role: this.process.role,
+                        message: subProcessError[code]
+                    })
+                    reject({
+                        input: "Main-check-connection",
+                        result: false,
+                        status: "fail",
+                        type: "async"
+                    })
+                })
             } else if (execution == "Main-check-socket-integrity") {  // main process에서 시작되며 요청된 해당 서비스 전반을 확인하는 메서드
-
+                /**
+                 * 
+                 *  무결성 테스트 명령어는 추후에 개발 필요
+                 * 
+                 */
             } else if (execution == "Main-data-request") {
-
+                this.requestProcessBlockData().then((_processData) => {  
+                    resolve({
+                        input: "Main-data-request",
+                        result: _processData,
+                        status: "success",
+                        type: "async"
+                    })
+                }).catch((code: SubProcessError) => {
+                    processLogger(__filename, {
+                        role: this.process.role,
+                        message: subProcessError[code]
+                    })
+                    reject({
+                        input: "Main-data-request",
+                        result: false,
+                        status: "fail",
+                        type: "async"
+                    })
+                })
             } else { //Main-register-process
                 this.registerManagementProcess().then(() => { //success
                     resolve({
@@ -185,9 +233,24 @@ export class subProcess implements SubProcess {
             }
         })
     }
-    /** manageMainSocket Main-data-request */
-    private requestProcessBlockData() {
+
+    /** Main-check-connection */
+    private checkMainPorcessConnection(): Promise<true> {
         return new Promise((resolve, reject: (error: SubProcessError) => void) => {
+            this.connectServer(this.portSetting.info.default).then((_socket) => {
+                if(_socket.connecting) {
+                    resolve(true)
+                }
+                reject("0014")
+            }).catch((code) => {
+                reject(code);
+            })
+        })
+    }
+
+    /** manageMainSocket Main-data-request */
+    private requestProcessBlockData(): Promise<ProcessRequest["process"]> {
+        return new Promise((resolve, reject: (code: SubProcessError) => void) => {
             this.connectServer(this.portSetting.info.default).then((_socket) => {
                 _socket.write(JSON.stringify({
                     type: "process-data-request",
@@ -197,22 +260,31 @@ export class subProcess implements SubProcess {
                     target: "process-information"
                 } as ProcessRequest));
 
-                this.requestProcessBlockDataReceiveSocketEvent(_socket);
+                this.requestProcessBlockDataReceiveSocketEvent(_socket).then((res) => {
+                    resolve(res)
+                }).catch((code) => {
+                    reject(code);
+                });
+            }).catch((code) => {
+                reject(code);
             })
         })
     }
 
-    private requestProcessBlockDataReceiveSocketEvent(socket: net.Socket): Promise<ProcessRequest> {
-        return new Promise((resolve, reject: (error: SubProcessError) => void) => {
+    private requestProcessBlockDataReceiveSocketEvent(socket: net.Socket): Promise<ProcessRequest["process"]> {
+        return new Promise((resolve, reject: (code: SubProcessError) => void) => {
+            let isFinish = false;
+            
             setTimeout(() => {
+                if(isFinish) { return }
                 reject("0013")
             }, this.process.timeout);
 
             socket.on("data", (data) => {
                 const message = JSON.parse(data.toString()) as ProcessMessage;
-
+                isFinish = true;
                 if(message.type == "process-data-request") {
-                    resolve(message);
+                    resolve(message.process);
                 } else {
                     reject("0013")
                 }
@@ -257,7 +329,7 @@ export class subProcess implements SubProcess {
      * 
      */
     private registerManagementProcessReceiveSoketEvent(socket: net.Socket, data: Buffer): Promise<Status> {
-        return new Promise((resolve, reject: (error: SubProcessError) => void) => {
+        return new Promise((resolve, reject: (code: SubProcessError) => void) => {
             const message = JSON.parse(data.toString()) as ProcessMessage;
 
             if (message.type == "register-response") {

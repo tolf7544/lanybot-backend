@@ -1,5 +1,5 @@
 import { PMError, PortError } from './type.error';
-import { Heartbeat, PortConfig, ProcessData, ProcessMessage } from './type.process';
+import { Heartbeat, PortConfig, ProcessData, ProcessMessage, ProcessRequest } from './type.process';
 import { Status } from './type.util';
 import net from 'net';
 import { InitalCode } from './type.code';
@@ -59,7 +59,7 @@ type ManageMainSocketAction = {
 	execution: "Main-data-request",
 	header: ProcessMessage["type"],
 	body: unknown,
-	result: ProcessMessage | PMError,
+	result: ProcessRequest["process"] | PMError,
 }
 
 type RequestMainHeartbeat = {

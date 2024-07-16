@@ -16,7 +16,8 @@ export const portError = {
 export const subProcessError = {
 	"0011": "[ sub-process.subProcess.registerManagementProcess() ] register request number is over than processData.registerPatient",
 	"0012": "[ sub-process.subProcess.clientProcess() ] this.processData.client need reconnecting.",
-	"0013": "[ sub-process.subProcess.requestProcessBlockDataReceiveSocketEvent() ] TEST TEXT ( NEED UPDATE ) ."
+	"0013": "[ sub-process.subProcess.requestProcessBlockDataReceiveSocketEvent() ] timeout. ( socket didnt received any data. )",
+	"0014": "[ sub-process.subProcess.checkMainPorcessConnection() ] connection failed."
 }
 
 export type PortError = keyof typeof portError;
