@@ -11,7 +11,7 @@ import { Status } from "../type/type.util";
 
 
 
-export class subProcess implements SubProcess {
+export class serviceProcess implements SubProcess {
     process: ProcessData;
     portSetting: portManager;
 
