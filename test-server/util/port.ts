@@ -1,21 +1,16 @@
 import net from "net";
 import fs from 'fs';
 import { PortConfig, ProcessData } from '../type/type.process';
-import { Port } from "../type/type.port";
+import { PortManager } from "../type/type.port";
 import { PortError, portError } from "../type/type.error";
 import { portLogger } from "./log";
 
 
-export class portManager implements Port {
-    InitalCode: 1;
+export class portManager implements PortManager {
     configPath = __dirname.replace("util","config/")+"port.json";
     info: PortConfig;
     maximumPort: number = 65535;
-    processData: ProcessData;
-
-    constructor(_processData:ProcessData) {
-        this.processData = _processData;
-    }
+    process: ProcessData;
 
 
     get data(): PortConfig | PortError {
@@ -52,7 +47,7 @@ export class portManager implements Port {
         
             server.on('error', (err) => {
                 portLogger(__filename,{
-                    role:this.processData.role,
+                    role:this.process.role,
                     message: `${portError["0002"]}\n${err}`
                 })
                 reject("0002")

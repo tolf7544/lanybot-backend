@@ -1,4 +1,4 @@
-import { ProcessData, ProcessMessage, ProcessRegister, ProcessRequest, ProcessRoleCode } from "../type/type.process";
+import { ProcessMessage, ProcessRegister, ProcessRequest, ProcessRoleCode } from "../type/type.process";
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
@@ -11,11 +11,11 @@ import { Status } from "../type/type.util";
 
 
 
-export class subProcess implements SubProcess {
-    process: ProcessData;
-    portSetting: portManager;
+export class subProcess extends portManager implements SubProcess {
 
     constructor(role: ProcessRoleCode, notRegisterProcess?: boolean) {
+        super();
+
         if (!notRegisterProcess) {
             notRegisterProcess = false;
         }
@@ -31,8 +31,6 @@ export class subProcess implements SubProcess {
             maximumPatient: 10,
             timeout: 2000
         }
-
-        this.portSetting = new portManager(this.process);
 
         this.processErrorEvent()
     }
@@ -151,7 +149,7 @@ export class subProcess implements SubProcess {
 
     private spawnServer() {
         return new Promise((resolve: (value: net.Socket) => void, reject: (error: PortError) => void) => {
-            this.portSetting.getPortNumber().then((portNumber) => {
+            this.getPortNumber().then((portNumber) => {
                 const socket = net.createConnection({ port: portNumber }, () => {
                     // this.process.client == net.Socket (createConnection 실행 후 net.Socket 리턴 되며 해당 리턴 값을 resolve의 인수값으로 넘김)
                     resolve(socket);
@@ -237,7 +235,7 @@ export class subProcess implements SubProcess {
     /** Main-check-connection */
     private checkMainPorcessConnection(): Promise<true> {
         return new Promise((resolve, reject: (error: SubProcessError) => void) => {
-            this.connectServer(this.portSetting.info.default).then((_socket) => {
+            this.connectServer(this.info.default).then((_socket) => {
                 if(_socket.connecting) {
                     resolve(true)
                 }
@@ -251,7 +249,7 @@ export class subProcess implements SubProcess {
     /** manageMainSocket Main-data-request */
     private requestProcessBlockData(): Promise<ProcessRequest["process"]> {
         return new Promise((resolve, reject: (code: SubProcessError) => void) => {
-            this.connectServer(this.portSetting.info.default).then((_socket) => {
+            this.connectServer(this.info.default).then((_socket) => {
                 _socket.write(JSON.stringify({
                     type: "process-data-request",
                     time: TodayDate(),

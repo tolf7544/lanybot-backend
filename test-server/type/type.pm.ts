@@ -1,6 +1,5 @@
-import { portManager } from "../util/port"
 import { manageSocketConnectionParams, manageSocketConnectionReturn } from "./type.port"
-import { ProcessData, ProcessRoleCode } from "./type.process"
+import { ProcessRoleCode } from "./type.process"
 import { Status } from "./type.util"
 
 export type ProcessQueueUnit = Omit<Process, "status">
@@ -81,19 +80,6 @@ export interface ServiceProcess {
 /**  */
 
 export interface SubProcess {
-	/**
-	 * 
-	 * process information
-	 * 
-	 */
-	process: ProcessData,
-	/**
-	 * 
-	 * set port config data and get useable port. 
-	 * 
-	 */
-	portSetting: portManager,
-
 	/*
 	execute "connect" | "check-connection" | "heartbeat" command to another process block(sub management process)
 	*/

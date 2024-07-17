@@ -1,44 +1,62 @@
 @startuml
 
-class subProcess {
-	
+class PortManager {
+    configPath = path
+    info: PortConfig
+    maximumPort: 65535
+    process: ProcessData
+
+	+ get data()
+	+ saveData()
+	+ isUsingPort(port)
+	+ getPortNumber()
+	private portLoopCheck(portNumber)
 }
 
-class port {
-	configPath: string
-	info: ProtConfig
-	maximumPort: number
-	processData: ProcessData
 
-	+ get Data():PortConfig | PortError 
-	+ saveData():void
-	+ isUsingPort(port: number):Promise<boolean>
-	+ getPortNumber():Promise<number>
-	+ private portLoopCheck(portNumber: number):Promise<number | PortError>
-}
+' class SubProcess {
+'     process: ProcessData
+'     portSetting: portManager
 
-note left of port::configPath
-"port.json file path"
-end note
+' 	+ get socket()
+' 	+ private spawnServer()
+' 	+ private connectServer(port: number)
 
-note left of port::info
-"default & active port number information"
-end note
+' 	+ manageSocketConnection({ execution, option })
 
-note left of port::maximumPort
-"searching port number limit"
-end note
+' 	+ manageMainSocket({ execution })
+' 	private checkMainPorcessConnection()
+' 	private requestProcessBlockData()
+' 	private requestProcessBlockDataReceiveSocketEvent(socket)
+' 	private registerManagementProcess()
+' 	private registerManagementProcessReceiveSoketEvent(socket, buffer)
+' 	private registerRequest(socket, resolve)
 
-note left of port::processData
-"this process default data"
-end note
+' 	+ private processErrorEvent()
+' }
 
-note right of port::saveData
-"save port config file"
-end note
+' note left of port::configPath
+' "port.json file path"
+' end note
 
-note right of port::portLoopCheck
-"check usesable port number until check port number is maximumPort number."
-end note
+' note left of port::info
+' "default & active port number information"
+' end note
+
+' note left of port::maximumPort
+' "searching port number limit"
+' end note
+
+' note left of port::processData
+' "this process default data"
+' end note
+
+' note right of port::saveData 
+' "save port config file"
+' end note
+
+' note right of port::portLoopCheck
+' "check usesable port number until check port number is maximumPort number."
+' end note
 
 @enduml

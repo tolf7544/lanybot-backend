@@ -2,7 +2,6 @@ import { PMError, PortError } from './type.error';
 import { Heartbeat, PortConfig, ProcessData, ProcessMessage, ProcessRequest } from './type.process';
 import { Status } from './type.util';
 import net from 'net';
-import { InitalCode } from './type.code';
 
 
 /** management another process socket(not management process) */
@@ -84,12 +83,11 @@ export type ManageMainSocketConnectionParams = {
 	execution: ManageMainSocketMethod["execution"]
 }
 
-export interface Port {
-	InitalCode: InitalCode["Port"]
+export interface PortManager {
 	configPath: string;
 	info: PortConfig;
 	maximumPort: number;
-	processData: ProcessData;
+	process: ProcessData;
 
 	/**
 	 * config/port.json 정보 가져오는 get 함수
