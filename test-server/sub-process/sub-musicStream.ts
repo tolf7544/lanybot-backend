@@ -1,3 +1,3 @@
-import { processRole } from "../type/type.process";
+import { roleCode } from "../type/type.process";
 
-const role = processRole.musicStream
+const role = roleCode.musicStream

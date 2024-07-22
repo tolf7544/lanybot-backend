@@ -4,12 +4,6 @@ import { Status } from "./type.util"
 
 export type ProcessQueueUnit = Omit<Process, "status">
 
-
-export const functionCode = {
-	"sub process management class": 1,
-	"port management class": 2
-}
-
 export type Process = {
 	role: ProcessRoleCode,
 	version: number,
@@ -43,12 +37,27 @@ export type PortLogDataType = {
 	status: Status
 }
 
+/** executor process */
+
+
+interface RequestHandler {
+	type: "handler"
+}
+
+/** listener process */
+
+interface RequestListener {
+	type: "listener"
+}
+
 /** service process type  */
 
+interface EventHandler extends RequestHandler,RequestListener {
+	type: RequestHandler["type"] & RequestListener["type"]
+}
+ 
 
-
-export interface ServiceProcess {
-	
+export interface ServiceProcess extends EventHandler {
 	/**
 	 * 서비스(smp아래에 있는 모든 프로세스)가 정상적으로 작동하는지 확인 
 	 */

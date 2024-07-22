@@ -1,8 +1,8 @@
-import { processRole } from "../type/type.process";
+import { roleCode } from "../type/type.process";
 import { subProcess } from "./sub-process";
 
 function main() {
-	const process = new subProcess(processRole.musicCommand);
+	const process = new subProcess(roleCode.musicCommand);
 	// process.manageMainSocket({"execution": "Main-register-process"});
 }
 

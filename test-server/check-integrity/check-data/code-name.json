@@ -1,0 +1,46 @@
+{
+    "role": {
+        "process_management": 0,
+        "music_command": 0,
+        "music_database": 0,
+        "music_stream": 0,
+        "security_spam": 0
+    },
+
+    "checkpoint": {
+        "sub_process_management_class": 0,
+	    "port_management_class": 0,
+        "service_process_event_listener": 0,
+        "service_process_event_handler": 0
+    },
+
+    "ipc-command": {
+        "process_block": {
+            "connect": 0,
+            "check_connect": 0,
+            "heartbeat": 0
+        },
+        "management_process": {
+            "Main-register-process": 0,
+            "Main-check-connection": 0,
+            "Main-data-request": 0,
+            "Main-check-socket-integrity": 0
+        }
+    },
+
+    "error": {
+        "port": {
+        "des-1": 0,
+        "des-2": 0,
+        "des-3": 0,
+        "des-4": 0
+        },
+        "sub_process": {
+            "des-1": 0,
+            "des-2": 0,
+            "des-3": 0,
+            "des-4": 0
+        }
+
+    }
+}

@@ -1,6 +1,6 @@
 import { pm } from "..";
 import { Process } from "../type/type.pm";
-import { ProcessMessage, ProcessRegister, ProcessRoleName, processRole } from "../type/type.process";
+import { ProcessMessage, ProcessRegister, ProcessRoleName, roleCode } from "../type/type.process";
 import { processLogger } from "../util/log";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
@@ -16,7 +16,7 @@ export function receiveRegister(connection:net.Socket,message: ProcessRegister) 
 		debugLog("register process finished")
 		connection.write(JSON.stringify({
 			"pid": process.pid,
-			"role": processRole.processManagement,
+			"role": roleCode.processManagement,
 			"time": TodayDate(),
 			"type": "register-response",
 			"state": "success",
@@ -25,15 +25,13 @@ export function receiveRegister(connection:net.Socket,message: ProcessRegister) 
 	} else {
 		connection.write(JSON.stringify({
 			"pid": process.pid,
-			"role": processRole.processManagement,
+			"role": roleCode.processManagement,
 			"time": TodayDate(),
 			"type": "register-response",
 			"state": "success",
 			"message": "register failed. logged in ./log/process"
 		} as ProcessMessage));
 	}
-	
-	connection.pipe(connection);
 }
 
 function register(message: ProcessRegister):{port?: number,status: Status} {
@@ -42,7 +40,7 @@ function register(message: ProcessRegister):{port?: number,status: Status} {
 	console.debug(process)
 	if(process) {
 		if(process.length >= 2) {
-			processLogger(__filename,{role: processRole.processManagement, message: "active process is more than 2. waiting for finish legacy process."})
+			processLogger(__filename,{role: roleCode.processManagement, message: "active process is more than 2. waiting for finish legacy process."})
 			return {
 				status: "cancel"
 			};
@@ -59,7 +57,7 @@ function register(message: ProcessRegister):{port?: number,status: Status} {
 				status: "active"
 			})
 
-			processLogger(__filename,{role: processRole.processManagement, message: "update process version."+` legacy version: ${process[0].version}`})
+			processLogger(__filename,{role: roleCode.processManagement, message: "update process version."+` legacy version: ${process[0].version}`})
 			return {
 				port: temp.pop(),
 				status: "success"
@@ -74,7 +72,7 @@ function register(message: ProcessRegister):{port?: number,status: Status} {
 			status: "active"
 		})
 		
-		processLogger(__filename,{role: processRole.processManagement, message: "generate process. active version: "+ number[versionCode]})
+		processLogger(__filename,{role: roleCode.processManagement, message: "generate process. active version: "+ number[versionCode]})
 		return {
 			port: undefined,
 			status: "success"

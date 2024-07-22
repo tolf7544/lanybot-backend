@@ -1,5 +1,6 @@
 import net from 'net';
 import { Status } from './type.util';
+import { roleCode } from './type.code';
 
 export type musicIPCdataFormat = {
 	youtubeId: string,
@@ -24,15 +25,9 @@ export interface ProcessData {
 
 export type ClientData = Set<string>;
 
-export const processRole = { // 서비스 역할 코드
-	"processManagement": "0000",
-	"musicCommand": "0001",
-	"musicDatabase": "0002",
-	"musicStream": "0003",
-	"securitySpam": "0004",
-} as const
-const processRoleValue = Object.values(processRole)
-const processRoleKey = Object.keys(processRole)[0] as keyof typeof processRole
+
+const processRoleValue = Object.values(roleCode)
+const processRoleKey = Object.keys(roleCode)[0] as keyof typeof roleCode
 export type ProcessRoleCode = typeof processRoleValue[0];
 export type ProcessRoleName = typeof processRoleKey;
 
@@ -50,7 +45,7 @@ export type Heartbeat = {
 	type: "heartbeat",
 	time: string,
 	role: ProcessRoleCode,
-	checkPoint: Array<number>
+	checkPoint: Array<string>
 }
 
 interface ProcessStatus extends Omit<ProcessData, "client"> {
@@ -83,3 +78,5 @@ export type PortConfig = {
 	default: number,
 	active: Array<number>
 }
+export { roleCode };
+

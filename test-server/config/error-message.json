@@ -1,0 +1,14 @@
+{
+    "port": {
+        "des-1": "[ port.port.'get data()' ] fs.readFileSync error occured",
+        "des-2": "[ port.port.isUsingPort() ] already using port. try next port...",
+        "des-3": "[ port.port.portLoopCheck() ] all port is not useable. try again later.",
+        "des-4": "[ port.port.manageSocketConnection() ] this command need option data."
+    },
+    "sub_process": {
+        "des-1": "[ sub-process.subProcess.registerManagementProcess() ] register request number is over than processData.registerPatient",
+        "des-2": "[ sub-process.subProcess.clientProcess() ] this.processData.client need reconnecting.",
+        "des-3": "[ sub-process.subProcess.requestProcessBlockDataReceiveSocketEvent() ] timeout. ( socket didnt received any data. )",
+        "des-4": "[ sub-process.subProcess.checkMainPorcessConnection() ] connection failed."
+    }
+}

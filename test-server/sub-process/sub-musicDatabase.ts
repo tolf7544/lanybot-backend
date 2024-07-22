@@ -1,10 +1,10 @@
-import { processRole } from "../type/type.process";
+import { roleCode } from "../type/type.process";
 import net from 'net';
 import { portLogger, simpleJsonLogger } from "../util/log";
 import { JsonLog, PortLogDataType } from "../type/type.pm";
 import { debugLog } from "../util/util";
 
-const role = processRole.musicDatabase
+const role = roleCode.musicDatabase
 const port = 9001
 
 function main() {

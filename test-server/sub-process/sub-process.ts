@@ -2,12 +2,13 @@ import { ProcessMessage, ProcessRegister, ProcessRequest, ProcessRoleCode } from
 import port from "../config/port.json";
 import { TodayDate, debugLog } from "../util/util";
 import net from 'net';
-import { JsonLog, PortLogDataType, SubProcess, functionCode } from "../type/type.pm";
+import { JsonLog, PortLogDataType, SubProcess } from "../type/type.pm";
 import { PortError, SubProcessError, subProcessError } from '../type/type.error';
 import { ManageMainSocketConnectionParams, ManageMainSocketConnectionReturn, manageSocketConnectionParams, manageSocketConnectionReturn } from '../type/type.port';
 import { portManager } from "../util/port";
 import { portLogger, processLogger, simpleJsonLogger } from "../util/log";
 import { Status } from "../type/type.util";
+import { classCode } from "../type/type.code";
 
 
 
@@ -102,7 +103,7 @@ export class subProcess extends portManager implements SubProcess {
                     type: "heartbeat",
                     time: TodayDate(),
                     role: this.process.role,
-                    checkPoint: [functionCode["port management class"]]
+                    checkPoint: [classCode["port management class"]]
                 }
             }
         }
